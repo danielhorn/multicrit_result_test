@@ -1,13 +1,14 @@
-
-#' Find the index of first/last \code{TRUE} value in a logical vector.
+#' countInversions
 #'
-#' @param predicted [\code{numeric}]\cr
-#'   Numeric vector vector.
-#' @param true [\code{numeric}]\cr
-#'   Numeric vector vector.
-#' @return [\code{numeric(1)}].
-#'   MSE
+#' Counts the number of inversions in the numeric vector x. An inversion occurs if
+#' \eqn{x[i] > x[j]} and \eqn{i < j}.
+#'
+#' @param x [\code{numeric}]\cr
+#'   Numeric vector.
+#' @return [\code{integer(1)}].
+#'   number of inversions
 #' @export
 countInversions = function(x) {
+  assertNumeric(x)
   .Call("do_countInversions", as.numeric(x), PACKAGE = "PFPT")
 }

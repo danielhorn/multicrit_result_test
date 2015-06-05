@@ -8,9 +8,10 @@ License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
 Roxygen: list(wrap = FALSE)
 Imports:
-    checkmate
+    checkmate,
+    BBmisc
 Suggests:
     testthat
 LazyData: yes
 ByteCompile: yes
-Version: 1.8
+Version: 0.1

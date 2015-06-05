@@ -3,4 +3,5 @@
 export(countInversions)
 export(sortedVectorTest)
 import(checkmate)
+import(BBmisc)
 useDynLib(PFPT, do_countInversions)

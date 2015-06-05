@@ -11,7 +11,7 @@
 #'   Vector specifying the order for the element in x. Must have the same type
 #'   as x. Default is for numeric vectors the numerical order, for factors
 #'   the order of the levels, for character vectors the first occurance in x.   
-#' @param [\code{integer(1)}]\cr
+#' @param n [\code{integer(1)}]\cr
 #'   Count of permutations used for the test.
 #' @return [\code{numeric(1)}].
 #'   p-Value

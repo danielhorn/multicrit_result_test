@@ -1,7 +1,10 @@
 
 #' @export
-plot.frontTestResult = function(x) {
+plot.frontTestResult = function(x, make.pause = TRUE) {
   requirePackages(c("ggplot2", "eaf"))
+  
+  checkPause = function()
+    if (make.pause) pause()
   
   # extract some stuff
   data = x$args$data
@@ -21,16 +24,16 @@ plot.frontTestResult = function(x) {
   
   # First Plot: EAF of everything
   plotEAF(x$args$data, x$args$formula)
-  pause()
+  checkPause()
   # Second Plot: Show Front contribution of all algos
   plotRelevantAlgos(data = x$front.contribution, kappa = x$args$kappa)
-  pause()
+  checkPause()
   # Third Plot: EAF of only relevant algorithms
   data = subset(data, data[, algo.col] %in% relevant.algos)
   plotEAF(data, x$args$formula)
   # Fourth Plot: Show permutation.
   for (i in seq_along(sign.perm)) {
-    pause()
+    checkPause()
     plotAlgorithmOrder(data, sign.perm[[i]], split.vals[[i]], var.cols, algo.col, repl.col)
   }
 }
@@ -38,8 +41,8 @@ plot.frontTestResult = function(x) {
 
 plotRelevantAlgos = function(data, kappa) {
   data.long = data.frame(
-    algo = rep(colnames(data[, -(1:2)]), each = nrow(data)),
-    contribution = as.vector(as.matrix(data[, -(1:2)]))
+    algo = rep(colnames(data), each = nrow(data)),
+    contribution = as.vector(as.matrix(data))
     )
   
   p = ggplot2::ggplot(data.long, ggplot2::aes(algo, contribution))

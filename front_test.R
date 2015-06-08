@@ -17,25 +17,23 @@ data.mnist = data.mnist[data.mnist$error < min(data.mnist$error) + 0.1, ]
 data.mnist$log.execTime = log(data.mnist$execTime)
 data.mnist$solver2 = factor(paste(data.mnist$solver, data.mnist$subsampling, sep = "_"))
 
-formula = solver ~ error + execTime | repl
+formula = solver ~ error + log.execTime | repl
 alpha = 0.05
+indicator = "epsilon"
 perm.test = "rpart"
-kappa = 1e-08
+kappa = 1e-04
 normalize = TRUE
 ref.point = c(1.1, 1.1)
+lambda = 100
 n = 1e4
 
-#res = mainTestProcedure(solver ~ error + log.execTime | repl,
-#  data.vehicle, 0.05, "hv", "mean.invs", 1e-4, TRUE, c(1.1, 1.1), 1e4)
-#res2 = mainTestProcedure(solver ~ error + log.execTime | repl,
-#  data.vehicle, 0.05, "hv", "test.invs", 1e-4, TRUE, c(1.1, 1.1), 1e4)
-res3 = mainTestProcedure(solver2 ~ error + log.execTime | repl,
-  data.vehicle, 0.05, "hv", "rpart", 1e-4, TRUE, c(1.1, 1.1), 1e4)
-#print(res)
-#plot(res)
-#print(res2)
-#plot(res2)
-print(res3)
-plot(res3)
+res = mainTestProcedure (formula = formula, data = data.vehicle, alpha = alpha,
+  indicator = indicator, perm.test = perm.test, kappa = kappa, normalize = normalize,
+  ref.point = ref.point, lambda = lambda, n = n)
+print(res)
+plot(res)
+
+
+
 
 

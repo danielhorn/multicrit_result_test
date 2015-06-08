@@ -1,5 +1,2 @@
-- Verschiedene Indikatoren, nicht nur HV
-- Mehr Informationen printen
-
 - Dokumentieren
 - Testen

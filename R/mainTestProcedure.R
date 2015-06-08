@@ -10,7 +10,8 @@
 #' @export
 
 mainTestProcedure = function(formula, data, alpha, indicator = "hv",
-  perm.test = "mean.invs", kappa = 1e-6, normalize = TRUE, ref.point = c(1.1, 1.1), n = 1e5) {
+  perm.test = "mean.invs", kappa = 1e-6, normalize = TRUE, ref.point = c(1.1, 1.1),
+  lambda = 100, n = 1e5) {
   
   requirePackages(c("emoa", "combinat"))  
   # Extract informations from formula
@@ -24,38 +25,33 @@ mainTestProcedure = function(formula, data, alpha, indicator = "hv",
   if (normalize)
     data[, var.cols] = normalize(data[, var.cols], method = "range", range = c(0, 1))
   
-  # Hypervolume of all data points for every repl
-  # FIXME: Why hypervolume? Make it flexible! R2 and unary Epsilon ftw!
-  max.hvs = by(data[, var.cols], INDICES = list(repl = data[, repl.col]),
-    function(x) dominated_hypervolume(t(as.matrix(x)), ref.point))
-  
-  # by has a nasty return value, make a "normal" dataframe
-  hvs = data.frame(
-    repl = attributes(max.hvs)$dimnames$repl,
-    max.hvs = as.vector(max.hvs)
+  contrFun = switch(indicator,
+    hv = function(points, o)
+      hypervolume_indicator(t(points), t(o), ref = ref.point),
+    epsilon = function(points, o)
+      epsilon_indicator(t(points), t(o)),
+    r2 = function(points, o)
+      r2_indicator(t(points), t(o), lambda = lambda)
   )
   
-  # Now, for every solver: HV for every repl without this solver
-  for (s in algos) {
-    tmp = subset(data, data[, algo.col] != s)
-    contr = hvs$max.hvs - as.vector(by(tmp[, var.cols], INDICES = list(repl = tmp[, repl.col]),
-      function(x) dominated_hypervolume(t(as.matrix(x)), ref.point)))
-    hvs[, s] = contr
-  }
+  algo.contrs = t(sapply(split(data, data[, repl.col]), function(d) {
+    o = as.matrix(d[, var.cols])
+    points = lapply(unique(d[, algo.col]), function(s)
+      as.matrix(d[d[, algo.col] != s, var.cols]))
+    sapply(points, contrFun, o = o)
+  }))
+  colnames(algo.contrs) = unique(data[, algo.col])
   
-  # Due to numerical reasons some values are less than zero - should not happen,
-  # so round them to 1e-16 (since we want to log soon), also round very small values.
-  # but add a samall positive random value to each value here - we don't want to
+  # Due to numerical reasons some values are less than or equal to zero. this
+  # hould not happen, so round them to 1e-16 (since we want to log soon).
+  # but add a small positive random value to each value here - we don't want to
   # have to many equal values
-  hvs[, -(1:2)] = dapply(hvs[, -(1:2)],
-    function(x) {
-      x[x < 1e-16] = 1e-16 + abs(rnorm(1, 0, 1e-16))
-      x
-    })
+  small.inds = algo.contrs < 1e-16
+  algo.contrs[small.inds] = 1e-16 + abs(rnorm(sum(small.inds), 0, 1e-16))
   
   # Test-Procedure to select k best algos
   # here we use as alpha half of the niveau given above
-  relevant.algos = relevantAlgosTest(hvs[, -(1:2)], kappa = kappa, alpha = alpha)
+  relevant.algos = relevantAlgosTest(algo.contrs, kappa = kappa, alpha = alpha)
   
   algos = algos[relevant.algos]
   data = subset(data, data[, algo.col] %in% algos)
@@ -101,17 +97,19 @@ mainTestProcedure = function(formula, data, alpha, indicator = "hv",
   args = list(
     formula = formula,
     data = data.old,
+    indicator = indicator,
     alpha = alpha, 
     perm.test = perm.test,
     kappa = kappa,
     normalize = normalize,
     ref.point = ref.point,
+    lambda = lambda,
     n = n
   )
   
   res = list(
     args = args,
-    front.contribution = hvs,
+    front.contribution = algo.contrs,
     relevant.algos = relevant.algos,
     split.vals = split.vals,
     significant.permutations = perms,

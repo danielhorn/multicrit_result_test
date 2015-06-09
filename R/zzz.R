@@ -1,5 +1,6 @@
 #' @import BBmisc
 #' @import checkmate
 #' @import ggplot2
-#' @useDynLib PFPT do_countInversions
+#' @importFrom Rcpp sourceCpp
+#' @useDynLib PFPT
 NULL

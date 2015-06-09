@@ -7,12 +7,14 @@ BugReports: https://github.com/danielhorn/multicrit_result_test/issues
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
 Roxygen: list(wrap = FALSE)
-Imports:
+Imports: 
     checkmate,
     BBmisc,
-    ggplot2
-Suggests:
+    ggplot2,
+    Rcpp
+Suggests: 
     testthat
 LazyData: yes
 ByteCompile: yes
 Version: 0.1
+LinkingTo: Rcpp

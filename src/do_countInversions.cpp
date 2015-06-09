@@ -1,8 +1,7 @@
-#include <R.h>
-#include <Rinternals.h>
-#include <Rmath.h>
+#include <Rcpp.h>
+using namespace Rcpp;
 
-int count_inversion_merge(double array[], int first, int last) {
+int count_inversion_merge(NumericVector array, int first, int last) {
   int mid = floor((first + last) / 2);
   int ai = first;
   int bi = mid + 1;
@@ -21,17 +20,17 @@ int count_inversion_merge(double array[], int first, int last) {
   
   while (ai <= mid)
     final[finali++] = array[ai++];
-    
+  
   while (bi <= last)
     final[finali++] = array[bi++];
-    
+  
   for (i=0 ; i < last - first + 1 ; i++)
     array[i + first] = final[i];
-    
+  
   return inversion;
 }
 
-int count_inversion(double array[], int a, int b) {
+int count_inversion(NumericVector array, int a, int b) {
   int x, y, z, mid;
   if (a >= b)
     return 0;
@@ -42,11 +41,13 @@ int count_inversion(double array[], int a, int b) {
   return x + y + z;
 }
 
-SEXP do_countInversions(SEXP s_x) {
-  const R_len_t n_x = length(s_x);
-  double *x = REAL(s_x);
+
+// [[Rcpp::export]]
+int do_countInversions(NumericVector  x) {
+  int n = x.size();
   
   int count = 0;
-  count = count_inversion(x, 0, n_x - 1);
-  return ScalarInteger(count);
+  count = count_inversion(x, 0, n - 1);
+  return count;
 }
+

@@ -4,10 +4,10 @@
 # \eqn{x[i] > x[j]} and \eqn{i < j}.
 #
 # @param x [\code{numeric}]\cr
-#   Numeric vector.
+#   Numeric vector. 
 # @return [\code{integer(1)}].
 #   number of inversions
 countInversions = function(x) {
-  assertNumeric(x)
-  .Call("do_countInversions", as.numeric(x), PACKAGE = "PFPT")
+    .Call('PFPT_do_countInversions', PACKAGE = 'PFPT', x)
 }
+

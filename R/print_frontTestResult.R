@@ -1,4 +1,6 @@
-
+#' print test result
+#' 
+#' @export
 
 print.frontTestResult = function(x) {
   sign.perms = x$significant.permutations

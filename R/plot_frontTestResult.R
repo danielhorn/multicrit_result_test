@@ -1,4 +1,6 @@
-
+#' plot test result
+#' 
+#' 
 #' @export
 plot.frontTestResult = function(x, make.pause = TRUE) {
   requirePackages(c("ggplot2", "eaf"))

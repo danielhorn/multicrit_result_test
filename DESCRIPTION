@@ -9,7 +9,8 @@ Encoding: UTF-8
 Roxygen: list(wrap = FALSE)
 Imports:
     checkmate,
-    BBmisc
+    BBmisc,
+    ggplot2
 Suggests:
     testthat
 LazyData: yes

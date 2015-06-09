@@ -1,3 +1,5 @@
+#' Main Test Procedure
+#'
 #' @param formula [\code{formula}] \cr
 #'   Formula to specify the variables: algorithms ~ var1 + var2 | repl
 #' @param data [\code{data.frame}] \cr
@@ -5,8 +7,6 @@
 #'   variables are ignored.
 #' @param alpa [\code{numeric(1)}] \cr
 #'   Alpha value for the tests.
-
-
 #' @export
 
 mainTestProcedure = function(formula, data, alpha, indicator = "hv",

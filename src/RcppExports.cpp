@@ -5,14 +5,14 @@
 
 using namespace Rcpp;
 
-// do_countInversions
-int do_countInversions(NumericVector x);
-RcppExport SEXP PFPT_do_countInversions(SEXP xSEXP) {
+// countInversions
+int countInversions(NumericVector x);
+RcppExport SEXP PFPT_countInversions(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    __result = Rcpp::wrap(do_countInversions(x));
+    __result = Rcpp::wrap(countInversions(x));
     return __result;
 END_RCPP
 }

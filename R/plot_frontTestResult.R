@@ -29,6 +29,11 @@ plot.frontTestResult = function(x, make.pause = TRUE) {
   checkPause()
   # Second Plot: Show Front contribution of all algos
   plotRelevantAlgos(data = x$front.contribution, kappa = x$args$kappa)
+  
+  
+  if (length(relevant.algos) == 0L)
+    return(invisible(NULL))
+  
   checkPause()
   # Third Plot: EAF of only relevant algorithms
   data = subset(data, data[, algo.col] %in% relevant.algos)
@@ -38,6 +43,7 @@ plot.frontTestResult = function(x, make.pause = TRUE) {
     checkPause()
     plotAlgorithmOrder(data, sign.perm[[i]], split.vals[[i]], var.cols, algo.col, repl.col)
   }
+  return(invisible(NULL))
 }
 
 

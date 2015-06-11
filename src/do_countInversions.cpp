@@ -30,24 +30,24 @@ int count_inversion_merge(NumericVector array, int first, int last) {
   return inversion;
 }
 
-int count_inversion(NumericVector array, int a, int b) {
+int do_count_inversion(NumericVector array, int a, int b) {
   int x, y, z, mid;
   if (a >= b)
     return 0;
   mid = floor((a + b) / 2);
-  x = count_inversion(array, a, mid);
-  y = count_inversion(array, mid + 1, b);
+  x = do_count_inversion(array, a, mid);
+  y = do_count_inversion(array, mid + 1, b);
   z = count_inversion_merge(array, a, b);
   return x + y + z;
 }
 
 
 // [[Rcpp::export]]
-int do_countInversions(NumericVector  x) {
+int countInversions(NumericVector  x) {
   int n = x.size();
   
   int count = 0;
-  count = count_inversion(x, 0, n - 1);
+  count = do_count_inversion(x, 0, n - 1);
   return count;
 }
 

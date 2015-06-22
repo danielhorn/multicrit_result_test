@@ -11,7 +11,7 @@
 
 mainTestProcedure = function(formula, data, alpha, indicator = "hv",
   perm.test = "mean.invs", kappa = 1e-6, normalize = TRUE, ref.point = c(1.1, 1.1),
-  lambda = 100, n = 1e5) {
+  lambda = 100, n = 1e5, cp = 0.1) {
   
   requirePackages(c("emoa", "combinat"))  
   # Extract informations from formula
@@ -87,7 +87,7 @@ mainTestProcedure = function(formula, data, alpha, indicator = "hv",
       split.vals = lapply(perms, function(perm) getTestSplitVals(data, perm, var.cols, repl.col, algo.col))
     }
     if (perm.test == "rpart") {
-      perms = sortedParetoFrontClassification(formula, data)
+      perms = sortedParetoFrontClassification(formula, data, cp = cp)
       split.vals = perms$split.vals
       qualitiy.index = perms$mmce
       perms  = perms$perm

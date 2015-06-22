@@ -18,10 +18,12 @@
 #   Vector specifying the order for the element in x. Must have the same type
 #   as x. Default is for numeric vectors the numerical order, for factors
 #   the order of the levels, for character vectors the first occurance in x.
+# @param cp [\code{numeric(1)}]\cr
+#  Complexity parameter for rpart tuning
 # @return [\code{character}]
 #   The preferred order of algorithms.
 
-sortedParetoFrontClassification = function(formula, data) {
+sortedParetoFrontClassification = function(formula, data, cp) {
   requirePackages("rpart")  
   
   algo = as.character(formula[[2]])
@@ -45,6 +47,7 @@ sortedParetoFrontClassification = function(formula, data) {
   
   # now use rpart to get permutation
   mod = rpart(algo ~ value, data = data.classif, maxsurrogate = 0)
+  mod = prune(mod, cp = cp)
   
   # i don't see a "good" way to get the perm vector from the mod
   # so, get the vector of split values from the model, sort them, add 2 new
@@ -68,6 +71,7 @@ sortedParetoFrontClassification = function(formula, data) {
   mmce = 0
   for (i in 1:10) {
     mod = rpart(algo ~ value, data = data.classif[ids != i, ], maxsurrogate = 0)
+    mod = prune(mod, cp = cp)
     mmce = mmce + mean(predict(mod, data.classif[ids == i, ], type = "class") != data.classif[ids == i, "algo"]) / 10
   }
   return(list(perm = perm, split.vals = split.vals, mmce = mmce))

@@ -27,10 +27,13 @@ plot.frontTestResult = function(x, make.pause = TRUE) {
   # First Plot: EAF of everything
   plotEAF(x$args$data, x$args$formula)
   checkPause()
+  
   # Second Plot: Show Front contribution of all algos
-  plotRelevantAlgos(data = x$front.contribution, kappa = x$args$kappa)
-  
-  
+  if (x$args$sel.fun == "ind")
+    plotRelevantAlgos(data = x$front.contribution, kappa = x$args$kappa)
+  if (x$args$sel.fun == "forward")  
+    plotForwardSelection(data = x$front.contribution, kappa = x$args$kappa)
+      
   if (length(relevant.algos) == 0L)
     return(invisible(NULL))
   
@@ -38,6 +41,7 @@ plot.frontTestResult = function(x, make.pause = TRUE) {
   # Third Plot: EAF of only relevant algorithms
   data = subset(data, data[, algo.col] %in% relevant.algos)
   plotEAF(data, x$args$formula)
+  
   # Fourth Plot: Show permutation.
   for (i in seq_along(sign.perm)) {
     checkPause()
@@ -61,6 +65,21 @@ plotRelevantAlgos = function(data, kappa) {
   print(p)
 }
 
+plotForwardSelection = function(data, kappa) {
+  data.long = data.frame(
+    id = seq_along(data),
+    algo = names(data),
+    contribution = data
+    )
+  p = ggplot2::ggplot(data.long, ggplot2::aes(id, contribution))
+  p = p + ggplot2::geom_line(size = 1, alpha = 0.5)
+  p = p + ggplot2::geom_text(ggplot2::aes(label = algo), hjust = 0,
+    vjust = 0, size = 6)
+  p = p + ggplot2::scale_x_continuous(breaks = data.long$id, labels = names(data))
+  p = p + ggplot2::geom_hline(yintercept = kappa, size = 1, alpha = 0.5)
+  print(p)
+}
+
 plotEAF = function(data, formula) {
   
   # build new formula for eaf
@@ -77,6 +96,8 @@ plotEAF = function(data, formula) {
   eafplot(new.formula, groups = get(algo), percentiles = 50, 
     data = fronts, xlab = vars[1], ylab = vars[2], col = colors)
 }
+
+
 
 plotAlgorithmOrder = function (data, sign.perm, split.vals, var.cols, algo.col, repl.col) {  
   # Split dataset into it replications
@@ -118,8 +139,6 @@ plotAlgorithmOrder = function (data, sign.perm, split.vals, var.cols, algo.col, 
     aes(xmin = xmin, ymin = ymin, xmax = xmax, ymax = ymax, fill = predicted),
     alpha = 0.2, inherit.aes = FALSE)
   
-
-
   print(p)
 }
 

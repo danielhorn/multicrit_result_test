@@ -9,9 +9,15 @@
 #'   Alpha value for the tests.
 #' @export
 
-mainTestProcedure = function(formula, data, alpha, indicator = "hv",
-  perm.test = "mean.invs", kappa = 1e-6, normalize = TRUE, ref.point = c(1.1, 1.1),
+mainTestProcedure = function(formula, data, alpha, indicator = "hv", sel.fun = "forward",
+  perm.test = "mean.invs", kappa = NULL, normalize = TRUE, ref.point = c(1.1, 1.1),
   lambda = 100, n = 1e5, cp = 0.1) {
+  
+  if (is.null(kappa))
+    kappa = switch(indicator,
+      hv = 1e-3, 
+      epsilon = 1e-2,
+      r2 = 1e-4)
   
   requirePackages(c("emoa", "combinat"))  
   # Extract informations from formula
@@ -23,7 +29,9 @@ mainTestProcedure = function(formula, data, alpha, indicator = "hv",
   
   # Normalize Data
   if (normalize)
-    data[, var.cols] = normalize(data[, var.cols], method = "range", range = c(0, 1))
+    for (i in seq_along(unique(data[, repl.col])))
+      data[data[, repl.col] == i, var.cols] = normalize(data[data[, repl.col] == i, var.cols],
+        method = "range", range = c(0, 1))
   
   contrFun = switch(indicator,
     hv = function(points, o)
@@ -34,26 +42,15 @@ mainTestProcedure = function(formula, data, alpha, indicator = "hv",
       r2_indicator(t(points), t(o), lambda = lambda)
   )
   
-  algo.contrs = t(sapply(split(data, data[, repl.col]), function(d) {
-    o = as.matrix(d[, var.cols])
-    points = lapply(unique(d[, algo.col]), function(s)
-      as.matrix(d[d[, algo.col] != s, var.cols]))
-    sapply(points, contrFun, o = o)
-  }))
-  colnames(algo.contrs) = unique(data[, algo.col])
+  selFun = switch(sel.fun,
+    ind = relevantAlgosSelection,
+    forward = relevantAlgosForwardSelection
+    )
   
-  # Due to numerical reasons some values are less than or equal to zero. this
-  # hould not happen, so round them to 1e-16 (since we want to log soon).
-  # but add a small positive random value to each value here - we don't want to
-  # have to many equal values
-  small.inds = algo.contrs < 1e-16
-  algo.contrs[small.inds] = 1e-16 + abs(rnorm(sum(small.inds), 0, 1e-16))
+  sel.algs = selFun(data = data, formula = formula,
+    contrFun = contrFun, kappa = kappa, alpha = alpha)
   
-  # Test-Procedure to select k best algos
-  # here we use as alpha half of the niveau given above
-  relevant.algos = relevantAlgosTest(algo.contrs, kappa = kappa, alpha = alpha)
-  
-  algos = algos[relevant.algos]
+  algos = algos[sel.algs$relevant.algos]
   data = subset(data, data[, algo.col] %in% algos)
   # drop some factor levels
   data[, algo.col] = factor(data[, algo.col], levels = algos)
@@ -98,19 +95,21 @@ mainTestProcedure = function(formula, data, alpha, indicator = "hv",
     formula = formula,
     data = data.old,
     indicator = indicator,
+    sel.fun = sel.fun,
     alpha = alpha, 
     perm.test = perm.test,
     kappa = kappa,
     normalize = normalize,
     ref.point = ref.point,
     lambda = lambda,
-    n = n
+    n = n,
+    cp = cp
   )
   
   res = list(
     args = args,
-    front.contribution = algo.contrs,
-    relevant.algos = relevant.algos,
+    front.contribution = sel.algs$algo.contrs,
+    relevant.algos = sel.algs$relevant.algos,
     split.vals = split.vals,
     significant.permutations = perms,
     qualitiy.index = qualitiy.index

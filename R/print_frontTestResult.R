@@ -13,7 +13,13 @@ print.frontTestResult = function(x) {
   repl.col = as.character(x$args$formula[[3]][[3]])
   
   catf("Welcome to package PFPT main test procedure.\n")
-  catf("Let's have a look at a brief summary of your data.\n")
+  catf("Let's have a look the parameters you specified:")
+  catf("Indicator: %s", x$args$indicator)
+  catf("Forwardselection? %s", if (x$args$sel.fun == "forward") TRUE else FALSE)
+  catf("Favored orders via: %s", x$args$perm.test)
+  
+  cat("\n")
+  
   catf("The variables you want to analyse are %s and %s,
 with respect to your algorithm variable %s and your replication variable %s.\n",
     var.cols[1], var.cols[2], algo.col, repl.col)

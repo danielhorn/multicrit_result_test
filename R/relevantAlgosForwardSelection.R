@@ -31,5 +31,7 @@ relevantAlgosForwardSelection = function(data, formula, contrFun, kappa, alpha) 
   names(relevant.algos) = selected
   names(selected.val) = selected
   
-  list(relevant.algos = relevant.algos, algo.contrs = selected.val)
+  perm = sapply(solvers, function(a) which(a == selected))
+  
+  list(relevant.algos = relevant.algos[perm], algo.contrs = selected.val[perm])
 }

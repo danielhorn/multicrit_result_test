@@ -66,10 +66,13 @@ plotRelevantAlgos = function(data, kappa) {
 }
 
 plotForwardSelection = function(data, kappa) {
+  
+  perm = order(data)
+  
   data.long = data.frame(
     id = seq_along(data),
-    algo = names(data),
-    contribution = data
+    algo = names(data)[perm],
+    contribution = data[perm]
     )
   p = ggplot2::ggplot(data.long, ggplot2::aes(id, contribution))
   p = p + ggplot2::geom_line(size = 1, alpha = 0.5)
@@ -127,17 +130,20 @@ plotAlgorithmOrder = function (data, sign.perm, split.vals, var.cols, algo.col, 
     predicted = sign.perm
   )
   
+
+  
   colors = rainbow(length(unique(data[, algo.col])))
   
   # now the plotting
   p = ggplot2::ggplot(data.long, ggplot2::aes(x = value, y = repl, col = algo))
-  p = p + ggplot2::geom_point(size = 3)
+  p = p + ggplot2::geom_point(size = 4)
   p = p + ggplot2::xlab(paste("Normalized", var.cols[1])) + ggplot2::ylab("Replication")
   p = p + ggplot2::scale_y_continuous(breaks = 1:max(data[, repl.col]))
-  p = p + ggplot2::scale_color_manual(values = colors, name = "observed ")
+  p = p + ggplot2::scale_color_manual(values = colors, name = "observed")
   p = p + geom_rect(data = data.geom.rect,
     aes(xmin = xmin, ymin = ymin, xmax = xmax, ymax = ymax, fill = predicted),
-    alpha = 0.2, inherit.aes = FALSE)
+    alpha = 0.1, inherit.aes = FALSE)
+  p = p + ggplot2::scale_fill_manual(values = colors[which(unique(data[, algo.col]) %in% sign.perm)], name = "predicted")
   
   print(p)
 }

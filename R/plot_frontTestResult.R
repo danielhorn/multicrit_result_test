@@ -78,7 +78,7 @@ plotForwardSelection = function(data, kappa) {
   p = p + ggplot2::geom_line(size = 1, alpha = 0.5)
   p = p + ggplot2::geom_text(ggplot2::aes(label = algo), hjust = 0,
     vjust = 0, size = 6)
-  p = p + ggplot2::scale_x_continuous(breaks = data.long$id, labels = names(data))
+  p = p + ggplot2::scale_x_continuous(breaks = data.long$id, labels = data.long$algo)
   p = p + ggplot2::geom_hline(yintercept = kappa, size = 1, alpha = 0.5)
   print(p)
 }

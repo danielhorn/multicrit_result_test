@@ -67,7 +67,7 @@ plotRelevantAlgos = function(data, kappa) {
 
 plotForwardSelection = function(data, kappa) {
   
-  perm = order(data)
+  perm = order(data, decreasing = TRUE)
   
   data.long = data.frame(
     id = seq_along(data),

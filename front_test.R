@@ -38,5 +38,5 @@ res = mainTestProcedure (formula = formula, data = data.vehicle, alpha = alpha,
   indicator = indicator, sel.fun = sel.fun, perm.test = perm.test, kappa = kappa, normalize = normalize,
   ref.point = ref.point, lambda = lambda, n = n, cp = cp)
 print(res)
-plot(res)
+plot(res, FALSE)
 

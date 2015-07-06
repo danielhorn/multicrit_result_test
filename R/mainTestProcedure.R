@@ -15,9 +15,9 @@ mainTestProcedure = function(formula, data, alpha, indicator = "hv", sel.fun = "
   
   if (is.null(kappa))
     kappa = switch(indicator,
-      hv = 1e-3, 
-      epsilon = 1e-2,
-      r2 = 1e-4)
+      hv = 1e-2, 
+      epsilon = 1e-1,
+      r2 = 1e-3)
   
   requirePackages(c("emoa", "combinat"))  
   # Extract informations from formula

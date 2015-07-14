@@ -50,8 +50,6 @@ mainTestProcedure = function(formula, data, alpha, indicator = "hv", sel.fun = "
   sel.algs = selFun(data = data, formula = formula,
     contrFun = contrFun, kappa = kappa, alpha = alpha)
   
-  print(sel.algs)
-  
   algos = names(sel.algs$relevant.algos)[sel.algs$relevant.algos]
   data = subset(data, data[, algo.col] %in% algos)
   # drop some factor levels

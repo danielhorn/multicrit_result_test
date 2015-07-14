@@ -181,7 +181,8 @@ finalPlot = function(data, sign.perm, split.vals, var.cols, algo.col, repl.col) 
     }))
   }
   reduced.fronts = do.call(rbind, lapply(data.splitted, reduceData))
- 
+  reduced.fronts[, algo.col] = factor(reduced.fronts[, algo.col])
+  
   colors = rainbow(length(sign.perm))
   new.formula = as.formula(sprintf("%s + %s ~ %s", var.cols[1L], var.cols[2L], repl.col))
   eafplot(new.formula, groups = get(algo.col), percentiles = 50, 

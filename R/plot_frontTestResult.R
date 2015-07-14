@@ -33,7 +33,7 @@ plot.frontTestResult = function(x, make.pause = TRUE) {
     plotRelevantAlgos(data = x$front.contribution, kappa = x$args$kappa)
   if (x$args$sel.fun == "forward")  
     plotForwardSelection(data = x$front.contribution, kappa = x$args$kappa)
-      
+  
   if (length(relevant.algos) == 0L)
     return(invisible(NULL))
   
@@ -47,6 +47,14 @@ plot.frontTestResult = function(x, make.pause = TRUE) {
     checkPause()
     plotAlgorithmOrder(data, sign.perm[[i]], split.vals[[i]], var.cols, algo.col, repl.col)
   }
+  
+  # Fifth Plot: Final Plot
+  for (i in seq_along(sign.perm)) {
+    checkPause()
+    finalPlot(data, sign.perm[[i]], split.vals[[i]], var.cols, algo.col, repl.col)
+  }
+  
+  
   return(invisible(NULL))
 }
 
@@ -55,7 +63,7 @@ plotRelevantAlgos = function(data, kappa) {
   data.long = data.frame(
     algo = rep(colnames(data), each = nrow(data)),
     contribution = as.vector(as.matrix(data))
-    )
+  )
   
   p = ggplot2::ggplot(data.long, ggplot2::aes(algo, contribution))
   p = p + ggplot2::geom_boxplot()
@@ -67,18 +75,25 @@ plotRelevantAlgos = function(data, kappa) {
 
 plotForwardSelection = function(data, kappa) {
   
-  perm = order(data, decreasing = TRUE)
-  
   data.long = data.frame(
-    id = seq_along(data),
-    algo = names(data)[perm],
-    contribution = data[perm]
-    )
-  p = ggplot2::ggplot(data.long, ggplot2::aes(id, contribution))
-  p = p + ggplot2::geom_line(size = 1, alpha = 0.5)
-  p = p + ggplot2::geom_text(ggplot2::aes(label = algo), hjust = 0,
-    vjust = 0, size = 6)
-  p = p + ggplot2::scale_x_continuous(breaks = data.long$id, labels = data.long$algo)
+    iter = rep(colnames(data), each = nrow(data)),
+    algo = rep(rownames(data), nrow(data)),
+    contribution = as.vector(data)
+  )
+  data.min = data.frame(
+    iter = 1:6,
+    iter2 = 1:6 + 0.05,
+    algo = rownames(data)[apply(data, 1, function(x) sum(!is.na(x)))],
+    contribution = apply(data, 2, min, na.rm = TRUE)
+  )
+  
+  p = ggplot2::ggplot(data.long, ggplot2::aes(iter, contribution))
+  p = p + ggplot2::geom_point(size = 3)
+  p = p + ggplot2::scale_y_log10()
+  p = p + ggplot2::geom_line(data = data.min, size = 1, alpha = 0.5)
+  p = p + ggplot2::geom_text(data = data.min, ggplot2::aes(label = algo, x = iter2),
+    hjust = 0, vjust = 0, size = 7)
+  #p = p + ggplot2::scale_x_continuous(breaks = data.long$id, labels = data.long$algo)
   p = p + ggplot2::geom_hline(yintercept = kappa, size = 1, alpha = 0.5)
   print(p)
 }
@@ -116,8 +131,8 @@ plotAlgorithmOrder = function (data, sign.perm, split.vals, var.cols, algo.col, 
       value = normalize(d[, var.cols[1]], method = "range"),
       algo = d[, algo.col],
       repl = d[, repl.col]
-      )
     )
+  )
   
   # now merge everything
   data.long = Reduce(rbind, data.splitted)
@@ -129,8 +144,6 @@ plotAlgorithmOrder = function (data, sign.perm, split.vals, var.cols, algo.col, 
     ymax = Inf,
     predicted = sign.perm
   )
-  
-
   
   colors = rainbow(length(unique(data[, algo.col])))
   
@@ -148,4 +161,30 @@ plotAlgorithmOrder = function (data, sign.perm, split.vals, var.cols, algo.col, 
   print(p)
 }
 
+finalPlot = function(data, sign.perm, split.vals, var.cols, algo.col, repl.col) {
+  split.vals = c(0, split.vals, 1)
+  data.splitted = split(data, data[, repl.col])
+  
+  # Apply Pareto-Filt
+  data.splitted = lapply(data.splitted, function(d)
+    d[nds_rank(as.matrix(t(d[, var.cols]))) == 1, ])
+  
+  # Each algo is only interesting in its split.vals. 
+  reduceData = function(d) {
+    min.val = min(d[, var.cols[1]])
+    max.val = max(d[, var.cols[1]])
+    split.vals2 = min.val + split.vals * (max.val - min.val)
+    #d = subset(d, d[, algo.col] %in% sign.perm)
+    do.call(rbind, lapply(seq_along(sign.perm), function(i) {
+      is.in = d[, var.cols[1]] > split.vals2[i] & d[, var.cols[1]] < split.vals2[i + 1]
+      subset(d, d[, algo.col] %in% sign.perm[i] & is.in)
+    }))
+  }
+  reduced.fronts = do.call(rbind, lapply(data.splitted, reduceData))
+ 
+  colors = rainbow(length(sign.perm))
+  new.formula = as.formula(sprintf("%s + %s ~ %s", var.cols[1L], var.cols[2L], repl.col))
+  eafplot(new.formula, groups = get(algo.col), percentiles = 50, 
+    data = reduced.fronts, xlab = var.cols[1], ylab = var.cols[2], col = colors) 
+}
 

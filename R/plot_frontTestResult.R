@@ -25,7 +25,7 @@ plot.frontTestResult = function(x, make.pause = TRUE, colors = NULL) {
   
   # First: Fix colors for algos!
   if (is.null(colors))
-    colors = cm.colors(length(unique(data[, algo.col])))
+    colors = rainbow(length(unique(data[, algo.col])))
   
   # Ground Zero: Chaos Plot
   plotChaosPlot(x$args$data, var.cols, algo.col, repl.col, colors)
@@ -220,20 +220,24 @@ finalPlot = function(data, sign.perm, split.vals, var.cols, algo.col, repl.col, 
   
   # now it gets a little bit crazy ... add "middlepoints" between groups
   # so a nice colored line can be plotted
-  # first, get "border" points. works since d is orderd
-  borders = which(d[-1L, 4L]  != d[-nrow(d), 4L])
-  # now, for each border, add 2 identical points, with mean of border and border + 1
-  # with different algos, this means different colours
-  new.points = (d[borders, 1:2] + d[borders + 1L, 1:2]) / 2L
-  new.points = data.frame(
-    X1 = rep(new.points$X1, each = 2L),
-    X2 = rep(new.points$X2, each = 2L),
-    X3 = 50,
-    groups = d[sort(c(borders, borders + 1L)), 4L]
-  )
-  
-  d = rbind(d, new.points)
-  d = d[order(d[, 1L]), ]
+  # only necessary if there is more than 1 relevant algo
+  if (length(sign.perm) > 1L)  {
+    # first, get "border" points. works since d is orderd
+    borders = which(d[-1L, 4L]  != d[-nrow(d), 4L])
+    # now, for each border, add 2 identical points, with mean of border and border + 1
+    # with different algos, this means different colours
+    new.points = (d[borders, 1:2] + d[borders + 1L, 1:2]) / 2L
+    new.points = data.frame(
+      X1 = rep(new.points$X1, each = 2L),
+      X2 = rep(new.points$X2, each = 2L),
+      X3 = 50,
+      groups = d[sort(c(borders, borders + 1L)), 4L]
+    )
+    
+    d = rbind(d, new.points)
+    d = d[order(d[, 1L]), ]
+    
+  }
   
   p = ggplot2::ggplot(d, aes_string("X1", "X2", colour = "groups"))
   p = p + ggplot2::geom_line(size = 2)

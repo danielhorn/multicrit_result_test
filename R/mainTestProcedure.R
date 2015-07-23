@@ -15,7 +15,7 @@ mainTestProcedure = function(formula, data, alpha, indicator = "hv", sel.fun = "
   
   if (is.null(kappa))
     kappa = switch(indicator,
-      hv = 1e-2, 
+      hv = 5e-3, 
       epsilon = 2.5e-2,
       r2 = 1e-3)
   

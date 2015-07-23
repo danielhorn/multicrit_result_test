@@ -46,21 +46,24 @@ plot.frontTestResult = function(x, make.pause = TRUE, colors = NULL) {
   
   checkPause()
   # Third Plot: EAF of only relevant algorithms
-  colors = colors[unique(data[, algo.col]) %in% relevant.algos]
+  colors.relevant.algos = colors[unique(data[, algo.col]) %in% relevant.algos]
   data = subset(data, data[, algo.col] %in% relevant.algos)
-  plotEAF(data, x$args$formula, colors)
+  plotEAF(data, x$args$formula, colors.relevant.algos)
   
   # Fourth Plot: Show permutation.
   for (i in seq_along(sign.perm)) {
     checkPause()
+    colors.sign.perm = colors.relevant.algos[unique(data[, algo.col]) %in% sign.perm[[i]]]
     plotAlgorithmOrder(data, sign.perm[[i]], split.vals[[i]],
-      var.cols, algo.col, repl.col, colors)
+      var.cols, algo.col, repl.col, colors.relevant.algos, colors.sign.perm)
   }
   
   # Fifth Plot: Final Plot with final reduced common Pareto front
   for (i in seq_along(sign.perm)) {
     checkPause()
-    finalPlot(data, sign.perm[[i]], split.vals[[i]], var.cols, algo.col, repl.col, colors)
+    colors.sign.perm = colors.relevant.algos[unique(data[, algo.col]) %in% sign.perm[[i]]]
+    finalPlot(data, sign.perm[[i]], split.vals[[i]], var.cols, algo.col, repl.col, 
+      colors.sign.perm)
   }
   
   
@@ -127,7 +130,6 @@ plotForwardSelection = function(data, kappa) {
 }
 
 plotEAF = function(data, formula, colors) {
-  print(colors)
   # build new formula for eaf
   algo = as.character(formula[[2]])
   repl = as.character(formula[[3]][[3]])
@@ -144,7 +146,7 @@ plotEAF = function(data, formula, colors) {
 
 
 plotAlgorithmOrder = function (data, sign.perm, split.vals,
-  var.cols, algo.col, repl.col, colors) {  
+  var.cols, algo.col, repl.col, colors.relevant.algos, colors.sign.perm) {  
   # Split dataset into it replications
   data.splitted = split(data, data[, repl.col])
   
@@ -156,7 +158,7 @@ plotAlgorithmOrder = function (data, sign.perm, split.vals,
   data.splitted = lapply(data.splitted, function(d)
     data.frame(
       value = normalize(d[, var.cols[1]], method = "range"),
-      algo = d[, algo.col],
+      algo = factor(d[, algo.col], levels = unique(data[, algo.col])),
       repl = d[, repl.col]
     )
   )
@@ -177,11 +179,11 @@ plotAlgorithmOrder = function (data, sign.perm, split.vals,
   p = p + ggplot2::geom_point(size = 4)
   p = p + ggplot2::xlab(paste("Normalized", var.cols[1])) + ggplot2::ylab("Replication")
   p = p + ggplot2::scale_y_continuous(breaks = 1:max(data[, repl.col]))
-  p = p + ggplot2::scale_color_manual(values = colors, name = "observed")
+  p = p + ggplot2::scale_color_manual(values = colors.relevant.algos, name = "observed")
   p = p + geom_rect(data = data.geom.rect,
     aes(xmin = xmin, ymin = ymin, xmax = xmax, ymax = ymax, fill = predicted),
     alpha = 0.1, inherit.aes = FALSE)
-  p = p + ggplot2::scale_fill_manual(values = colors, name = "predicted")
+  p = p + ggplot2::scale_fill_manual(values = colors.sign.perm, name = "predicted")
   
   print(p)
 }

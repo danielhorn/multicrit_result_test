@@ -2,7 +2,7 @@
 #' 
 #' 
 #' @export
-plot.frontTestResult = function(x, make.pause = TRUE) {
+plot.frontTestResult = function(x, make.pause = TRUE, colors = NULL) {
   requirePackages(c("ggplot2", "eaf"))
   
   checkPause = function()
@@ -23,9 +23,16 @@ plot.frontTestResult = function(x, make.pause = TRUE) {
   if (!is.list(sign.perm))
     sign.perm = list(sign.perm)
   
+  # First: Fix colors for algos!
+  if (is.null(colors))
+    colors = cm.colors(length(unique(data[, algo.col])))
+  
+  # Ground Zero: Chaos Plot
+  plotChaosPlot(x$args$data, var.cols, algo.col, repl.col, colors)
+  checkPause()
   
   # First Plot: EAF of everything
-  plotEAF(x$args$data, x$args$formula)
+  plotEAF(x$args$data, x$args$formula, colors)
   checkPause()
   
   # Second Plot: Show Front contribution of all algos
@@ -39,25 +46,46 @@ plot.frontTestResult = function(x, make.pause = TRUE) {
   
   checkPause()
   # Third Plot: EAF of only relevant algorithms
+  colors = colors[unique(data[, algo.col]) %in% relevant.algos]
   data = subset(data, data[, algo.col] %in% relevant.algos)
-  plotEAF(data, x$args$formula)
+  plotEAF(data, x$args$formula, colors)
   
   # Fourth Plot: Show permutation.
   for (i in seq_along(sign.perm)) {
     checkPause()
-    plotAlgorithmOrder(data, sign.perm[[i]], split.vals[[i]], var.cols, algo.col, repl.col)
+    plotAlgorithmOrder(data, sign.perm[[i]], split.vals[[i]],
+      var.cols, algo.col, repl.col, colors)
   }
   
-  # Fifth Plot: Final Plot
+  # Fifth Plot: Final Plot with final reduced common Pareto front
   for (i in seq_along(sign.perm)) {
     checkPause()
-    finalPlot(data, sign.perm[[i]], split.vals[[i]], var.cols, algo.col, repl.col)
+    finalPlot(data, sign.perm[[i]], split.vals[[i]], var.cols, algo.col, repl.col, colors)
   }
   
   
   return(invisible(NULL))
 }
 
+plotChaosPlot = function(data, var.cols, algo.col, repl.col, colors) {
+  # Split dataset into it replications
+  data.splitted = split(data, data[, c(repl.col, algo.col)])
+  
+  # Apply Pareto-Filt
+  data.splitted = lapply(data.splitted, function(d)
+    d[nds_rank(as.matrix(t(d[, var.cols]))) == 1L, ])
+  
+  # remerge data
+  data = do.call(rbind, data.splitted)
+  
+  
+  
+  p = ggplot2::ggplot(data, ggplot2::aes_string(var.cols[1], var.cols[2], colour = algo.col))
+  p = p + ggplot2::geom_point(size = 3)
+  p = p + ggplot2::ggtitle("All Pareto Optimal Points")
+  p = p + ggplot2::scale_colour_manual(values = colors)
+  print(p)
+}
 
 plotRelevantAlgos = function(data, kappa) {
   data.long = data.frame(
@@ -83,7 +111,7 @@ plotForwardSelection = function(data, kappa) {
   data.min = data.frame(
     iter = 1:6,
     iter2 = 1:6 + 0.05,
-    algo = rownames(data)[apply(data, 1, function(x) sum(!is.na(x)))],
+    algo = names(sort(apply(data, 1, function(x) sum(!is.na(x))))),
     contribution = apply(data, 2, min, na.rm = TRUE)
   )
   
@@ -98,8 +126,8 @@ plotForwardSelection = function(data, kappa) {
   print(p)
 }
 
-plotEAF = function(data, formula) {
-  
+plotEAF = function(data, formula, colors) {
+  print(colors)
   # build new formula for eaf
   algo = as.character(formula[[2]])
   repl = as.character(formula[[3]][[3]])
@@ -110,14 +138,13 @@ plotEAF = function(data, formula) {
   fronts[, algo] = factor(fronts[, algo])
   fronts[, repl] = factor(fronts[, repl])
   
-  colors = rainbow(length(levels(fronts[, algo])))
   eafplot(new.formula, groups = get(algo), percentiles = 50, 
-    data = fronts, xlab = vars[1], ylab = vars[2], col = colors)
+    data = fronts, xlab = vars[1], ylab = vars[2], col = colors, lwd = 2.75)
 }
 
 
-
-plotAlgorithmOrder = function (data, sign.perm, split.vals, var.cols, algo.col, repl.col) {  
+plotAlgorithmOrder = function (data, sign.perm, split.vals,
+  var.cols, algo.col, repl.col, colors) {  
   # Split dataset into it replications
   data.splitted = split(data, data[, repl.col])
   
@@ -142,10 +169,8 @@ plotAlgorithmOrder = function (data, sign.perm, split.vals, var.cols, algo.col, 
     xmax = c(split.vals, 1),
     ymin = -Inf,
     ymax = Inf,
-    predicted = sign.perm
+    predicted = factor(sign.perm, levels = unique(data[, algo.col]))
   )
-  
-  colors = rainbow(length(unique(data[, algo.col])))
   
   # now the plotting
   p = ggplot2::ggplot(data.long, ggplot2::aes(x = value, y = repl, col = algo))
@@ -156,12 +181,12 @@ plotAlgorithmOrder = function (data, sign.perm, split.vals, var.cols, algo.col, 
   p = p + geom_rect(data = data.geom.rect,
     aes(xmin = xmin, ymin = ymin, xmax = xmax, ymax = ymax, fill = predicted),
     alpha = 0.1, inherit.aes = FALSE)
-  p = p + ggplot2::scale_fill_manual(values = colors[which(unique(data[, algo.col]) %in% sign.perm)], name = "predicted")
+  p = p + ggplot2::scale_fill_manual(values = colors, name = "predicted")
   
   print(p)
 }
 
-finalPlot = function(data, sign.perm, split.vals, var.cols, algo.col, repl.col) {
+finalPlot = function(data, sign.perm, split.vals, var.cols, algo.col, repl.col, colors) {
   split.vals = c(0, split.vals, 1)
   data.splitted = split(data, data[, repl.col])
   
@@ -182,10 +207,39 @@ finalPlot = function(data, sign.perm, split.vals, var.cols, algo.col, repl.col) 
   }
   reduced.fronts = do.call(rbind, lapply(data.splitted, reduceData))
   reduced.fronts[, algo.col] = factor(reduced.fronts[, algo.col])
+ 
+  # Hack the EAF package - use the underlying eaf function to get points
+  # for my own eaf plotting
+  d = eaf:::eafs(points = reduced.fronts[, var.cols],
+    sets = reduced.fronts[, repl.col], groups = reduced.fronts[, algo.col], percentiles = 50)
+  d = d[order(d[, 1L]), ]
+  # I need another pareto filter now
+  d = d[!is_dominated(t(d[, 1:2])), ]
   
-  colors = rainbow(length(sign.perm))
-  new.formula = as.formula(sprintf("%s + %s ~ %s", var.cols[1L], var.cols[2L], repl.col))
-  eafplot(new.formula, groups = get(algo.col), percentiles = 50, 
-    data = reduced.fronts, xlab = var.cols[1], ylab = var.cols[2], col = colors) 
+  # now it gets a little bit crazy ... add "middlepoints" between groups
+  # so a nice colored line can be plotted
+  # first, get "border" points. works since d is orderd
+  borders = which(d[-1L, 4L]  != d[-nrow(d), 4L])
+  # now, for each border, add 2 identical points, with mean of border and border + 1
+  # with different algos, this means different colours
+  new.points = (d[borders, 1:2] + d[borders + 1L, 1:2]) / 2L
+  new.points = data.frame(
+    X1 = rep(new.points$X1, each = 2L),
+    X2 = rep(new.points$X2, each = 2L),
+    X3 = 50,
+    groups = d[sort(c(borders, borders + 1L)), 4L]
+  )
+  
+  d = rbind(d, new.points)
+  d = d[order(d[, 1L]), ]
+  
+  p = ggplot2::ggplot(d, aes_string("X1", "X2", colour = "groups"))
+  p = p + ggplot2::geom_line(size = 2)
+  p = p + ggplot2::xlab(var.cols[1L]) + ggplot2::ylab(var.cols[2L])
+  p = p + ggplot2::ggtitle("Reduced common Pareto front")
+  p = p + ggplot2::scale_colour_manual(values = colors)
+  print(p)
+  #eafplot(new.formula, groups = get(algo.col), percentiles = 50, 
+  #  data = reduced.fronts, xlab = var.cols[1], ylab = var.cols[2], col = colors) 
 }
 

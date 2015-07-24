@@ -188,6 +188,9 @@ plotAlgorithmOrder = function (data, sign.perm, split.vals,
   print(p)
 }
 
+
+
+
 finalPlot = function(data, sign.perm, split.vals, var.cols, algo.col, repl.col, colors) {
   split.vals = c(0, split.vals, 1)
   data.splitted = split(data, data[, repl.col])
@@ -233,19 +236,25 @@ finalPlot = function(data, sign.perm, split.vals, var.cols, algo.col, repl.col, 
       X3 = 50,
       groups = d[sort(c(borders, borders + 1L)), 4L]
     )
-    
     d = rbind(d, new.points)
     d = d[order(d[, 1L]), ]
-    
   }
   
-  p = ggplot2::ggplot(d, aes_string("X1", "X2", colour = "groups"))
+  # another nasty hack. if an algo has 2 non-connected parts of the front ...
+  # we have to assign 2 different group levels for ggplot
+  last.els.per.algo = c(0, which(d[-nrow(d), 4] != d[-1, 4]), nrow(d))
+  # now give a unique id for every part
+  counts.per.part = diff(last.els.per.algo)
+  ids = unlist(lapply(seq_along(counts.per.part), function(i) rep(i, counts.per.part[i])))
+  # an add this id to the group coloum
+  d$group = factor(paste(d[, 4], ids))
+  names(d)[4] = "colour"
+  
+  p = ggplot2::ggplot(d, ggplot2::aes_string("X1", "X2", colour = "colour", group = "group"))
   p = p + ggplot2::geom_line(size = 2)
   p = p + ggplot2::xlab(var.cols[1L]) + ggplot2::ylab(var.cols[2L])
   p = p + ggplot2::ggtitle("Reduced common Pareto front")
   p = p + ggplot2::scale_colour_manual(values = colors)
   print(p)
-  #eafplot(new.formula, groups = get(algo.col), percentiles = 50, 
-  #  data = reduced.fronts, xlab = var.cols[1], ylab = var.cols[2], col = colors) 
 }
 

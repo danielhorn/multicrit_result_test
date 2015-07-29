@@ -39,7 +39,7 @@ plot.frontTestResult = function(x, make.pause = TRUE, colors = NULL) {
   if (x$args$sel.fun == "ind")
     plotRelevantAlgos(data = x$front.contribution, kappa = x$args$kappa)
   if (x$args$sel.fun == "forward")  
-    plotForwardSelection(data = x$front.contribution, kappa = x$args$kappa)
+    plotForwardSelection(data = x$front.contribution, kappa = x$args$kappa, colors = colors)
   
   if (length(relevant.algos) == 0L)
     return(invisible(NULL))
@@ -104,28 +104,39 @@ plotRelevantAlgos = function(data, kappa) {
   print(p)
 }
 
-plotForwardSelection = function(data, kappa) {
+plotForwardSelection = function(data, kappa, colors) {
   
-  data.long = data.frame(
-    iter = rep(colnames(data), each = nrow(data)),
-    algo = rep(rownames(data), nrow(data)),
-    contribution = as.vector(data)
-  )
-  data.min = data.frame(
-    iter = 1:6,
-    iter2 = 1:6 + 0.05,
-    algo = names(sort(apply(data, 1, function(x) sum(!is.na(x))))),
-    contribution = apply(data, 2, min, na.rm = TRUE)
-  )
+  data.long.all = do.call(rbind, lapply(seq_along(data), function(i) {
+    d = data[[i]]
+    data.frame(
+      contribution = as.vector(d), 
+      algo = rep(rownames(d)),
+      #repl = rep(colnames(d), each = nrow(d)),
+      iter = i + 0.25,
+      shape = "observered"
+    )
+  }))
   
-  p = ggplot2::ggplot(data.long, ggplot2::aes(iter, contribution))
-  p = p + ggplot2::geom_point(size = 3)
+  data.long.median = aggregate(contribution ~ iter + algo, data = data.long.all, FUN = median)
+  data.long.median$iter = data.long.median$iter - 0.25
+  data.long.median$shape = "median"
+  
+  data.long = rbind(data.long.median, data.long.all)
+  data.long$shape = factor(data.long$shape)
+  
+  data.long.min = aggregate(contribution ~ iter, data = data.long.median,
+    FUN = min)
+  
+  mapping1 = ggplot2::aes(x = iter, y = contribution, colour = algo, shape = shape, size = shape)
+  mapping2 = ggplot2::aes(x = iter, y = contribution)
+  p = ggplot2::ggplot()
+  p = p + ggplot2::geom_point(data = data.long, mapping = mapping1)
+  p = p + ggplot2::scale_size_manual(values = c(4, 3))
+  p = p + ggplot2::scale_colour_manual(values = colors)
   p = p + ggplot2::scale_y_log10()
-  p = p + ggplot2::geom_line(data = data.min, size = 1, alpha = 0.5)
-  p = p + ggplot2::geom_text(data = data.min, ggplot2::aes(label = algo, x = iter2),
-    hjust = 0, vjust = 0, size = 7)
-  #p = p + ggplot2::scale_x_continuous(breaks = data.long$id, labels = data.long$algo)
+  p = p + ggplot2::geom_line(data = data.long.min, mapping = mapping2, size = 1, alpha = 0.5)
   p = p + ggplot2::geom_hline(yintercept = kappa, size = 1, alpha = 0.5)
+  p = p + ggplot2::scale_x_continuous(breaks = data.long.min$iter, labels = data.long.min$iter)
   print(p)
 }
 

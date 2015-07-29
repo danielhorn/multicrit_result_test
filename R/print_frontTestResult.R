@@ -15,7 +15,7 @@ print.frontTestResult = function(x) {
   catf("Welcome to package PFPT main test procedure.\n")
   catf("Let's have a look the parameters you specified:")
   catf("Indicator: %s", x$args$indicator)
-  catf("Forwardselection? %s", if (x$args$sel.fun == "forward") TRUE else FALSE)
+  catf("Selection method? %s", x$args$sel.fun)
   catf("Favored orders via: %s", x$args$perm.test)
   
   cat("\n")
@@ -29,14 +29,14 @@ with respect to your algorithm variable %s and your replication variable %s.\n",
   catf("Found %i different algorithms: ", length(algos))
   print(algos)
   catf("\n")
-  catf("Computing contributions of the algorithms to the common front with respect to %s indicator.",
-    x$args$indicator)
-  catf("Using all algorithms with contribution significant greater than %1.0e.", x$args$kappa)
+  #catf("Computing contributions of the algorithms to the common front with respect to %s indicator.",
+  #  x$args$indicator)
+ # catf("Using all algorithms with contribution significant greater than %1.0e.", x$args$kappa)
   catf("%i algorithms have an significant contribution to the common pareto front:",
     sum(x$relevant.algos))
   print(names(which(x$relevant.algos)))
   catf("\n")
-  catf("Computing favored orders of algorithms with respect to the method %s.", x$args$perm.test)
+  #catf("Computing favored orders of algorithms with respect to the method %s.", x$args$perm.test)
   if (length(sign.perms) == 0L)
     catf("No order of algorithms is favored about all others.")
   else {

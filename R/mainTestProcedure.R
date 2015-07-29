@@ -44,7 +44,9 @@ mainTestProcedure = function(formula, data, alpha, indicator = "hv", sel.fun = "
   
   selFun = switch(sel.fun,
     ind = relevantAlgosSelection,
-    forward = relevantAlgosForwardSelection
+    forward = relevantAlgosForwardSelection,
+    dom = relevantAlgosDominationSelection,
+    eaf = relevantAlgosEAFSelection
     )
   
   sel.algs = selFun(data = data, formula = formula,

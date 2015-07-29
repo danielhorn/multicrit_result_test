@@ -40,6 +40,11 @@ plot.frontTestResult = function(x, make.pause = TRUE, colors = NULL) {
     plotRelevantAlgos(data = x$front.contribution, kappa = x$args$kappa)
   if (x$args$sel.fun == "forward")  
     plotForwardSelection(data = x$front.contribution, kappa = x$args$kappa, colors = colors)
+  if (x$args$sel.fun == "dom")  
+    plotDominationSelection(data = x$front.contribution, colors = colors, 
+      repl.count = length(unique((data[, repl.col]))))
+  if (x$args$sel.fun == "eaf")  
+    plotEAFSelection(data = x$front.contribution, kappa = x$args$kappa, colors = colors)
   
   if (length(relevant.algos) == 0L)
     return(invisible(NULL))
@@ -111,7 +116,6 @@ plotForwardSelection = function(data, kappa, colors) {
     data.frame(
       contribution = as.vector(d), 
       algo = rep(rownames(d)),
-      #repl = rep(colnames(d), each = nrow(d)),
       iter = i + 0.25,
       shape = "observered"
     )
@@ -137,6 +141,44 @@ plotForwardSelection = function(data, kappa, colors) {
   p = p + ggplot2::geom_line(data = data.long.min, mapping = mapping2, size = 1, alpha = 0.5)
   p = p + ggplot2::geom_hline(yintercept = kappa, size = 1, alpha = 0.5)
   p = p + ggplot2::scale_x_continuous(breaks = data.long.min$iter, labels = data.long.min$iter)
+  print(p)
+}
+
+plotDominationSelection = function(data, colors, repl.count) {
+  
+  data.long = unlist(lapply(1:length(data), function(i) rep(names(data)[i], data[i])))
+  data.long = data.frame(algo = factor(data.long, levels = names(data)))
+  
+  p = ggplot2::ggplot(data.long, aes(algo, fill = algo))
+  p = p + ggplot2::geom_bar()
+  p = p + ggplot2::scale_fill_manual(values = colors, drop = FALSE)
+  p = p + scale_x_discrete(drop = FALSE)
+  p = p + ggplot2::geom_hline(yintercept = repl.count / 2, size = 1, alpha = 0.5)
+  print(p)
+}
+
+
+plotEAFSelection = function(data, kappa, colors) {
+  data.long = do.call(rbind, lapply(seq_along(data), function(i) {
+    d = data[[i]]
+    data.frame(
+      contribution = d, 
+      algo = names(d),
+      iter = i
+    )
+  }))
+  data.min = aggregate(contribution ~ iter, data = data.long,
+    FUN = min)
+  
+  mapping1 = ggplot2::aes(x = iter, y = contribution, colour = algo)
+  mapping2 = ggplot2::aes(x = iter, y = contribution)
+  p = ggplot2::ggplot()
+  p = p + ggplot2::geom_point(data = data.long, mapping = mapping1, size = 4)
+  p = p + ggplot2::scale_colour_manual(values = colors)
+  p = p + ggplot2::scale_y_log10()
+  p = p + ggplot2::geom_line(data = data.min, mapping = mapping2, size = 1, alpha = 0.5)
+  p = p + ggplot2::geom_hline(yintercept = kappa, size = 1, alpha = 0.5)
+  p = p + ggplot2::scale_x_continuous(breaks = data.min$iter, labels = data.min$iter)
   print(p)
 }
 

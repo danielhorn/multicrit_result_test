@@ -7,12 +7,8 @@ relevantAlgosEAFSelection = function(data, formula, contrFun, kappa, alpha) {
   repl.col = as.character(formula[[3]][[3]])
   var.cols = as.character(formula[[3]][[2]])[-1]
   
-  # attention: split via algo!
-  data.splitted = split(data, data[, algo.col])
-  
   # first, we need the reference front. this is the median eaf of all algos and repls
   ref.front = eaf:::eafs(points = data[, var.cols], sets = data[, repl.col], percentiles = 50)[, 1:2]
-  
   
   # a getIndicatorValue Function - gets a vector of algos and returns the indicator
   getIndicatorValue = function(algos) {

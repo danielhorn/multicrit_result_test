@@ -29,8 +29,11 @@ relevantAlgosMulticritSelection = function(data, formula, contrFun, kappa, alpha
   contr.vals.norm = normalize(contr.vals, method = "range", margin = 2L)
   min.index = which.min(0.05 * contr.vals.norm[, 1L] + 0.95 * contr.vals.norm[, 2L])
   
-  print(min.index)
-  print(combs[min.index, ])
+  #print(min.index)
+  #print(combs[min.index, ])
+  
+  contr.vals = data.frame(combs, contr.vals)
+  colnames(contr.vals) = c(algos, "algo.count", "contribution")
   
   list(relevant.algos = combs[min.index, ], algo.contrs = contr.vals)
 }

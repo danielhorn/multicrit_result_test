@@ -45,6 +45,9 @@ plot.frontTestResult = function(x, make.pause = TRUE, colors = NULL) {
       repl.count = length(unique((data[, repl.col]))))
   if (x$args$sel.fun == "eaf")  
     plotEAFSelection(data = x$front.contribution, kappa = x$args$kappa, colors = colors)
+  if (x$args$sel.fun == "multicrit")  
+    plotMulticritSelection(data = x$front.contribution, colors = colors)
+  
   
   if (length(relevant.algos) == 0L)
     return(invisible(NULL))
@@ -92,6 +95,7 @@ plotChaosPlot = function(data, var.cols, algo.col, repl.col, colors) {
   p = p + ggplot2::geom_point(size = 3)
   p = p + ggplot2::ggtitle("All Pareto Optimal Points")
   p = p + ggplot2::scale_colour_manual(values = colors)
+  p = p + ggplot2::facet_wrap(reformulate(repl.col))
   print(p)
 }
 
@@ -117,7 +121,7 @@ plotForwardSelection = function(data, kappa, colors) {
       contribution = as.vector(d), 
       algo = rep(rownames(d)),
       iter = i + 0.25,
-      shape = "observered"
+      shape = "observed"
     )
   }))
   
@@ -181,6 +185,57 @@ plotEAFSelection = function(data, kappa, colors) {
   p = p + ggplot2::scale_x_continuous(breaks = data.min$iter, labels = data.min$iter)
   print(p)
 }
+
+plotMulticritSelection = function(data, colors) {
+  
+  # data to add algorithm colored points
+  nof.algos = max(data$algo.count)
+  algos = colnames(data)[1:nof.algos]
+  algo.data = do.call(rbind, lapply(1:nof.algos, function(i) {
+    inds = data[, i]
+    tmp = data[inds, c("algo.count", "contribution")]
+    tmp[, 1] = tmp[, 1] + (i + 1) / (nof.algos + 3)
+    tmp$algo = algos[i]
+    tmp
+  }))
+  
+  # data to add the line of the weighted sum. first in the normalized space
+  # line should end at nof.algos + 1!
+  line.data = data.frame(
+    x = seq(0, (nof.algos + 1) / nof.algos , length.out = 129L),
+    y = seq(0, 0.05 / 0.95 * (nof.algos + 1) / nof.algos , length.out = 129L)
+    )
+  line.data = line.data[-129L, ]
+  
+  # now transform to the real data space
+  line.data$x = line.data$x * diff(range(data$algo.count)) + min(data$algo.count)
+  line.data$y = line.data$y * diff(range(data$contribution)) + min(data$contribution)
+  
+  # mark the best point
+  contr.vals.norm = normalize(data[, c("algo.count", "contribution")], method = "range", margin = 2L)
+  min.index = which.min(0.05 * contr.vals.norm[, 1L] + 0.95 * contr.vals.norm[, 2L])
+  best.point = data[min.index, c("algo.count", "contribution")]
+  
+  # remove best point from data
+  data = data[-min.index, ]
+  
+  p = ggplot2::ggplot()
+  p = p + ggplot2::geom_point(ggplot2::aes_string("algo.count", "contribution"),
+    data = best.point, size = 4, color = "red")
+  p = p + ggplot2::geom_point(ggplot2::aes_string("algo.count", "contribution"),
+    data = data, size = 3)
+  p = p + ggplot2::geom_point(ggplot2::aes_string("algo.count", "contribution", color = "algo"),
+    data = algo.data)
+  p = p + ggplot2::geom_line(ggplot2::aes(x = x, y = y), data = line.data)
+  p = p + ggplot2::scale_y_log10()
+  p = p + ggplot2::scale_colour_manual(values = colors)
+  p = p + ggplot2::scale_x_continuous(limits = c(0.5, NA_real_),
+    breaks = 1:nof.algos)#function(x) pretty(x, n = min(5, nof.algos)))
+  p = p + ggplot2::ggtitle("Pareto Front of number of algorithms and algorithm contribution")
+  p = p + ggplot2::xlab("Number of algorithms")
+  print(p)
+}
+
 
 plotEAF = function(data, formula, colors) {
   # build new formula for eaf

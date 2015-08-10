@@ -25,9 +25,11 @@ relevantAlgosMulticritSelection = function(data, formula, contrFun, kappa, alpha
   # and compute its indicator value
   contr.vals = t(apply(combs, 1, function(inds) c(sum(inds), getIndicatorValue( algos[inds]))))
   
-  # normalize and weighted sum of the 2 objective number of algos and indicator value
+  # normalize and augmented chebycheff of the 2 objective number of algos and indicator value
   contr.vals.norm = normalize(contr.vals, method = "range", margin = 2L)
-  min.index = which.min(0.05 * contr.vals.norm[, 1L] + 0.95 * contr.vals.norm[, 2L])
+  ws.part = 0.05 * contr.vals.norm[, 1L] + 0.95 * contr.vals.norm[, 2L]
+  max.part = pmax(0.05 * contr.vals.norm[, 1L], 0.95 * contr.vals.norm[, 2L])
+  min.index = which.min(max.part + 0.05 * ws.part)
   
   #print(min.index)
   #print(combs[min.index, ])

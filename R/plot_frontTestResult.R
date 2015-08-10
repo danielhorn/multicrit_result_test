@@ -213,7 +213,9 @@ plotMulticritSelection = function(data, colors) {
   
   # mark the best point
   contr.vals.norm = normalize(data[, c("algo.count", "contribution")], method = "range", margin = 2L)
-  min.index = which.min(0.05 * contr.vals.norm[, 1L] + 0.95 * contr.vals.norm[, 2L])
+  ws.part = 0.05 * contr.vals.norm[, 1L] + 0.95 * contr.vals.norm[, 2L]
+  max.part = pmax(0.05 * contr.vals.norm[, 1L], 0.95 * contr.vals.norm[, 2L])
+  min.index = which.min(max.part + 0.05 * ws.part)
   best.point = data[min.index, c("algo.count", "contribution")]
   
   # remove best point from data

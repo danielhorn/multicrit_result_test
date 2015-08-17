@@ -1,4 +1,6 @@
-relevantAlgosDominationSelection = function(data, formula, contrFun, kappa, alpha) {
+
+
+relevantAlgosDominationSelection = function(data, formula) {
   algo.col = as.character(formula[[2]])
   repl.col = as.character(formula[[3]][[3]])
   var.cols = as.character(formula[[3]][[2]])[-1]

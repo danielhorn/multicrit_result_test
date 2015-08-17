@@ -1,5 +1,5 @@
 
-relevantAlgosMulticritSelection = function(data, formula, contrFun, kappa, alpha) {
+relevantAlgosMulticritSelection = function(data, formula, contrFun) {
   
   algo.col = as.character(formula[[2]])
   repl.col = as.character(formula[[3]][[3]])

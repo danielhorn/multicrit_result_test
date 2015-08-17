@@ -11,73 +11,68 @@ plot.frontTestResult = function(x, make.pause = TRUE, colors = NULL) {
   # extract some stuff
   data = x$args$data
   formula = x$args$formula
-  front.contribution = x$front.contribution
   algo.col = as.character(formula[[2]])
   var.cols = as.character(formula[[3]][[2]])[-1]
   repl.col = as.character(formula[[3]][[3]])
+  
+  repls = length(unique((data[, repl.col])))
+  
+  algos = unique(data[, algo.col])
+  non.dom.algos = names(which(x$non.dominated.algos))
   relevant.algos = names(which(x$relevant.algos))
+  
+  best.algo.order = x$best.algo.order
   split.vals = x$split.vals
-  sign.perm = x$significant.permutations
-  if (!is.list(split.vals))
-    split.vals = list(split.vals)
-  if (!is.list(sign.perm))
-    sign.perm = list(sign.perm)
   
   # First: Fix colors for algos!
   if (is.null(colors))
-    colors = rainbow(length(unique(data[, algo.col])))
+    colors = rainbow(length(algos))
   
   # Ground Zero: Chaos Plot
-  plotChaosPlot(x$args$data, var.cols, algo.col, repl.col, colors)
+  plotChaosPlot(data, var.cols, algo.col, repl.col, colors)
   checkPause()
   
   # First Plot: EAF of everything
-  plotEAF(x$args$data, x$args$formula, colors)
+  plotEAF(data, formula, colors)
   checkPause()
   
-  # Second Plot: Show Front contribution of all algos
-  if (x$args$sel.fun == "ind")
-    plotRelevantAlgos(data = x$front.contribution, kappa = x$args$kappa)
-  if (x$args$sel.fun == "forward")  
-    plotForwardSelection(data = x$front.contribution, kappa = x$args$kappa, colors = colors)
-  if (x$args$sel.fun == "dom")  
-    plotDominationSelection(data = x$front.contribution, colors = colors, 
-      repl.count = length(unique((data[, repl.col]))))
-  if (x$args$sel.fun == "eaf")  
-    plotEAFSelection(data = x$front.contribution, kappa = x$args$kappa, colors = colors)
-  if (x$args$sel.fun == "multicrit")  
-    plotMulticritSelection(data = x$front.contribution, colors = colors)
-  
-  
-  if (length(relevant.algos) == 0L)
-    return(invisible(NULL))
-  
+  # Second Plot: Remove dominated algorithms
+  plotDominationSelection(data = x$algos.domination.count, colors = colors, 
+    repl.count = repls)
   checkPause()
-  # Third Plot: EAF of only relevant algorithms
-  colors.relevant.algos = colors[unique(data[, algo.col]) %in% relevant.algos]
+  
+  # Third Plot: EAF off all non-dominated algos
+  colors.non.dom.algos = colors[algos %in% non.dom.algos]
+  data = subset(data, data[, algo.col] %in% non.dom.algos)
+  plotEAF(data, x$args$formula, colors.non.dom.algos)
+  checkPause()
+  
+  # 4th Plot: Multicrit Selection of relevant algos
+  plotMulticritSelection(data = x$algos.selection.vals, colors = colors)
+  checkPause()
+  
+  # 5th Plot: EAF off all remaining algos
+  colors.relevant.algos = colors[algos %in% relevant.algos]
   data = subset(data, data[, algo.col] %in% relevant.algos)
   plotEAF(data, x$args$formula, colors.relevant.algos)
+  checkPause()
+ 
+  # 6th Plot: Show permutation.
+  colors.best.order = colors[algos %in% best.algo.order]
+  plotAlgorithmOrder(data, best.algo.order, x$split.vals,
+    var.cols, algo.col, repl.col, colors.relevant.algos, colors.best.order)
+  checkPause()
   
-  # Fourth Plot: Show permutation.
-  for (i in seq_along(sign.perm)) {
-    checkPause()
-    colors.sign.perm = colors.relevant.algos[unique(data[, algo.col]) %in% sign.perm[[i]]]
-    plotAlgorithmOrder(data, sign.perm[[i]], split.vals[[i]],
-      var.cols, algo.col, repl.col, colors.relevant.algos, colors.sign.perm)
-  }
-  
-  # Fifth Plot: Final Plot with final reduced common Pareto front
-  for (i in seq_along(sign.perm)) {
-    checkPause()
-    colors.sign.perm = colors.relevant.algos[unique(data[, algo.col]) %in% sign.perm[[i]]]
-    finalPlot(data, sign.perm[[i]], split.vals[[i]], var.cols, algo.col, repl.col, 
-      colors.sign.perm)
-  }
-  
+  # 7th Plot: Final Plot with final reduced common Pareto front
+  finalPlot(data, best.algo.order, split.vals, var.cols, algo.col, repl.col, 
+    colors.best.order)
   
   return(invisible(NULL))
 }
 
+
+# Ground Zero Plot, Chaos Plot
+# Plot The Raw Data, Color for algo, x and y for the variables and facet wrap for repl
 plotChaosPlot = function(data, var.cols, algo.col, repl.col, colors) {
   # Split dataset into it replications
   data.splitted = split(data, data[, c(repl.col, algo.col)])
@@ -89,8 +84,6 @@ plotChaosPlot = function(data, var.cols, algo.col, repl.col, colors) {
   # remerge data
   data = do.call(rbind, data.splitted)
   
-  
-  
   p = ggplot2::ggplot(data, ggplot2::aes_string(var.cols[1], var.cols[2], colour = algo.col))
   p = p + ggplot2::geom_point(size = 3)
   p = p + ggplot2::ggtitle("All Pareto Optimal Points")
@@ -99,54 +92,7 @@ plotChaosPlot = function(data, var.cols, algo.col, repl.col, colors) {
   print(p)
 }
 
-plotRelevantAlgos = function(data, kappa) {
-  data.long = data.frame(
-    algo = rep(colnames(data), each = nrow(data)),
-    contribution = as.vector(as.matrix(data))
-  )
-  
-  p = ggplot2::ggplot(data.long, ggplot2::aes(algo, contribution))
-  p = p + ggplot2::geom_boxplot()
-  p = p + scale_y_log10()
-  p = p + ggplot2::ggtitle("Contribution of algorithms to common pareto front")
-  p = p + ggplot2::geom_hline(yintercept = kappa)
-  print(p)
-}
-
-plotForwardSelection = function(data, kappa, colors) {
-  
-  data.long.all = do.call(rbind, lapply(seq_along(data), function(i) {
-    d = data[[i]]
-    data.frame(
-      contribution = as.vector(d), 
-      algo = rep(rownames(d)),
-      iter = i + 0.25,
-      shape = "observed"
-    )
-  }))
-  
-  data.long.median = aggregate(contribution ~ iter + algo, data = data.long.all, FUN = median)
-  data.long.median$iter = data.long.median$iter - 0.25
-  data.long.median$shape = "median"
-  
-  data.long = rbind(data.long.median, data.long.all)
-  data.long$shape = factor(data.long$shape)
-  
-  data.long.min = aggregate(contribution ~ iter, data = data.long.median,
-    FUN = min)
-  
-  mapping1 = ggplot2::aes(x = iter, y = contribution, colour = algo, shape = shape, size = shape)
-  mapping2 = ggplot2::aes(x = iter, y = contribution)
-  p = ggplot2::ggplot()
-  p = p + ggplot2::geom_point(data = data.long, mapping = mapping1)
-  p = p + ggplot2::scale_size_manual(values = c(4, 3))
-  p = p + ggplot2::scale_colour_manual(values = colors)
-  p = p + ggplot2::scale_y_log10()
-  p = p + ggplot2::geom_line(data = data.long.min, mapping = mapping2, size = 1, alpha = 0.5)
-  p = p + ggplot2::geom_hline(yintercept = kappa, size = 1, alpha = 0.5)
-  p = p + ggplot2::scale_x_continuous(breaks = data.long.min$iter, labels = data.long.min$iter)
-  print(p)
-}
+# Second Plot: Plot in how many repls an algo has non.dom points, via barplot
 
 plotDominationSelection = function(data, colors, repl.count) {
   
@@ -161,31 +107,7 @@ plotDominationSelection = function(data, colors, repl.count) {
   print(p)
 }
 
-
-plotEAFSelection = function(data, kappa, colors) {
-  data.long = do.call(rbind, lapply(seq_along(data), function(i) {
-    d = data[[i]]
-    data.frame(
-      contribution = d, 
-      algo = names(d),
-      iter = i
-    )
-  }))
-  data.min = aggregate(contribution ~ iter, data = data.long,
-    FUN = min)
-  
-  mapping1 = ggplot2::aes(x = iter, y = contribution, colour = algo)
-  mapping2 = ggplot2::aes(x = iter, y = contribution)
-  p = ggplot2::ggplot()
-  p = p + ggplot2::geom_point(data = data.long, mapping = mapping1, size = 4)
-  p = p + ggplot2::scale_colour_manual(values = colors)
-  p = p + ggplot2::scale_y_log10()
-  p = p + ggplot2::geom_line(data = data.min, mapping = mapping2, size = 1, alpha = 0.5)
-  p = p + ggplot2::geom_hline(yintercept = kappa, size = 1, alpha = 0.5)
-  p = p + ggplot2::scale_x_continuous(breaks = data.min$iter, labels = data.min$iter)
-  print(p)
-}
-
+# Fourth Plot: The Multicrit Selection ...
 plotMulticritSelection = function(data, colors) {
   
   # data to add algorithm colored points
@@ -238,7 +160,7 @@ plotMulticritSelection = function(data, colors) {
   print(p)
 }
 
-
+# First, Third and Fifth Plot: EAF plot.
 plotEAF = function(data, formula, colors) {
   # build new formula for eaf
   algo = as.character(formula[[2]])
@@ -254,9 +176,9 @@ plotEAF = function(data, formula, colors) {
     data = fronts, xlab = vars[1], ylab = vars[2], col = colors, lwd = 2.75)
 }
 
-
-plotAlgorithmOrder = function (data, sign.perm, split.vals,
-  var.cols, algo.col, repl.col, colors.relevant.algos, colors.sign.perm) {  
+# Plot function to visualise the decision tree.
+plotAlgorithmOrder = function (data, best.algo.order, split.vals,
+  var.cols, algo.col, repl.col, colors.relevant.algos, colors.best.algo.order) {  
   # Split dataset into it replications
   data.splitted = split(data, data[, repl.col])
   
@@ -281,7 +203,7 @@ plotAlgorithmOrder = function (data, sign.perm, split.vals,
     xmax = c(split.vals, 1),
     ymin = -Inf,
     ymax = Inf,
-    predicted = factor(sign.perm, levels = unique(data[, algo.col]))
+    predicted = factor(best.algo.order, levels = unique(data[, algo.col]))
   )
   
   # now the plotting
@@ -293,15 +215,13 @@ plotAlgorithmOrder = function (data, sign.perm, split.vals,
   p = p + geom_rect(data = data.geom.rect,
     aes(xmin = xmin, ymin = ymin, xmax = xmax, ymax = ymax, fill = predicted),
     alpha = 0.1, inherit.aes = FALSE)
-  p = p + ggplot2::scale_fill_manual(values = colors.sign.perm, name = "predicted")
+  p = p + ggplot2::scale_fill_manual(values = colors.best.algo.order, name = "predicted")
   
   print(p)
 }
 
-
-
-
-finalPlot = function(data, sign.perm, split.vals, var.cols, algo.col, repl.col, colors) {
+# Final Plot for the common reduced Pareto front
+finalPlot = function(data, best.algo.order, split.vals, var.cols, algo.col, repl.col, colors) {
   split.vals = c(0, split.vals, 1)
   data.splitted = split(data, data[, repl.col])
   
@@ -314,10 +234,10 @@ finalPlot = function(data, sign.perm, split.vals, var.cols, algo.col, repl.col, 
     min.val = min(d[, var.cols[1]])
     max.val = max(d[, var.cols[1]])
     split.vals2 = min.val + split.vals * (max.val - min.val)
-    #d = subset(d, d[, algo.col] %in% sign.perm)
-    do.call(rbind, lapply(seq_along(sign.perm), function(i) {
+    #d = subset(d, d[, algo.col] %in% best.algo.order)
+    do.call(rbind, lapply(seq_along(best.algo.order), function(i) {
       is.in = d[, var.cols[1]] > split.vals2[i] & d[, var.cols[1]] < split.vals2[i + 1]
-      subset(d, d[, algo.col] %in% sign.perm[i] & is.in)
+      subset(d, d[, algo.col] %in% best.algo.order[i] & is.in)
     }))
   }
   reduced.fronts = do.call(rbind, lapply(data.splitted, reduceData))
@@ -334,7 +254,7 @@ finalPlot = function(data, sign.perm, split.vals, var.cols, algo.col, repl.col, 
   # now it gets a little bit crazy ... add "middlepoints" between groups
   # so a nice colored line can be plotted
   # only necessary if there is more than 1 relevant algo
-  if (length(sign.perm) > 1L)  {
+  if (length(best.algo.order) > 1L)  {
     # first, get "border" points. works since d is orderd
     borders = which(d[-1L, 4L]  != d[-nrow(d), 4L])
     # now, for each border, add 2 identical points, with mean of border and border + 1
@@ -367,4 +287,3 @@ finalPlot = function(data, sign.perm, split.vals, var.cols, algo.col, repl.col, 
   p = p + ggplot2::scale_colour_manual(values = colors)
   print(p)
 }
-

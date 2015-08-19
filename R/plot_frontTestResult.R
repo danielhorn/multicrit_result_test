@@ -48,7 +48,7 @@ plot.frontTestResult = function(x, make.pause = TRUE, colors = NULL) {
   checkPause()
   
   # 4th Plot: Multicrit Selection of relevant algos
-  plotMulticritSelection(data = x$algos.selection.vals, colors = colors)
+  plotMulticritSelection(data = x$algos.selection.vals, colors = colors.non.dom.algos)
   checkPause()
   
   # 5th Plot: EAF off all remaining algos
@@ -118,8 +118,22 @@ plotMulticritSelection = function(data, colors) {
     tmp = data[inds, c("algo.count", "contribution")]
     tmp[, 1] = tmp[, 1] + (i + 1) / (nof.algos + 3)
     tmp$algo = algos[i]
+    tmp$points = ".3.algo.points"
     tmp
   }))
+  
+  multicrit.data = data[, nof.algos + 1:2]
+  multicrit.data$points = ".1.sel.points"
+  multicrit.data$algo = NA
+  
+  # mark the best point
+  contr.vals.norm = normalize(data[, c("algo.count", "contribution")], method = "range", margin = 2L)
+  ws.part = 0.05 * contr.vals.norm[, 1L] + 0.95 * contr.vals.norm[, 2L]
+  max.part = pmax(0.05 * contr.vals.norm[, 1L], 0.95 * contr.vals.norm[, 2L])
+  min.index = which.min(max.part + 0.05 * ws.part)
+  multicrit.data[min.index, "points"] = ".2.best.point"
+  
+  rbind.data = rbind(multicrit.data, algo.data)
   
   # data to add the line of the weighted sum. first in the normalized space
   # line should end at nof.algos + 1!
@@ -132,29 +146,40 @@ plotMulticritSelection = function(data, colors) {
   # now transform to the real data space
   line.data$x = line.data$x * diff(range(data$algo.count)) + min(data$algo.count)
   line.data$y = line.data$y * diff(range(data$contribution)) + min(data$contribution)
-  
-  # mark the best point
-  contr.vals.norm = normalize(data[, c("algo.count", "contribution")], method = "range", margin = 2L)
-  ws.part = 0.05 * contr.vals.norm[, 1L] + 0.95 * contr.vals.norm[, 2L]
-  max.part = pmax(0.05 * contr.vals.norm[, 1L], 0.95 * contr.vals.norm[, 2L])
-  min.index = which.min(max.part + 0.05 * ws.part)
-  best.point = data[min.index, c("algo.count", "contribution")]
-  
-  # remove best point from data
-  data = data[-min.index, ]
+  line.data$line = "Scalar Problem"
   
   p = ggplot2::ggplot()
-  p = p + ggplot2::geom_point(ggplot2::aes_string("algo.count", "contribution"),
-    data = best.point, size = 4, color = "red")
-  p = p + ggplot2::geom_point(ggplot2::aes_string("algo.count", "contribution"),
-    data = data, size = 3)
-  p = p + ggplot2::geom_point(ggplot2::aes_string("algo.count", "contribution", color = "algo"),
-    data = algo.data)
-  p = p + ggplot2::geom_line(ggplot2::aes(x = x, y = y), data = line.data)
+#  p = p + ggplot2::geom_point(ggplot2::aes_string("algo.count", "contribution"),
+#    data = best.point, size = 8, color = "grey50")
+  p = p + ggplot2::geom_point(ggplot2::aes_string("algo.count", "contribution",
+    color = "algo", shape = "points", size = "points"), data = rbind.data)
+  #p = p + ggplot2::geom_point(ggplot2::aes_string("algo.count", "contribution"),
+  #  data = data, size = 3)
+  #p = p + ggplot2::geom_point(ggplot2::aes_string("algo.count", "contribution", color = "algo"),
+  #  data = algo.data)
+  p = p + ggplot2::geom_line(ggplot2::aes_string(x = "x", y = "y",
+    linetype = "line"), data = line.data)
   p = p + ggplot2::scale_y_log10()
-  p = p + ggplot2::scale_colour_manual(values = colors)
+  p = p + ggplot2::scale_colour_manual(values = c(colors),  na.value = "black",
+    name = "Used Algorithms")
+  labs = c(
+    `.3.algo.points` = "\nSubset of algorithms\nused for the next selection\npoint to the left\n",
+    `.1.sel.points` = "\nPoints used\nin multicrit selection\n",
+    `.2.best.point` = "\nBest Subset with respect\nto the used scalarization\n"
+      )
+  p = p + ggplot2::scale_shape_manual(values = c(16, 10L, 15L),
+    name = "Meaning of points", labels = labs)
+  p = p + ggplot2::scale_size_manual(values = c(5, 7, 2.5),
+    name = "Meaning of points",  labels = labs)
+  p = p + ggplot2::scale_linetype_manual(values = "solid", name = "Meaning of line")
   p = p + ggplot2::scale_x_continuous(limits = c(0.5, NA_real_),
     breaks = 1:nof.algos)#function(x) pretty(x, n = min(5, nof.algos)))
+  p = p + ggplot2::guides(
+    linetype = ggplot2::guide_legend(order = 1L),
+    shape = ggplot2::guide_legend(order = 2L),
+    size = ggplot2::guide_legend(order = 2L),
+    colour = ggplot2::guide_legend(order = 3L, override.aes = list(shape = 15L, size = 4))
+    )
   p = p + ggplot2::ggtitle("Pareto Front of number of algorithms and algorithm contribution")
   p = p + ggplot2::xlab("Number of algorithms")
   print(p)

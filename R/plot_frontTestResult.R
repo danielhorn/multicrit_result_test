@@ -1,12 +1,9 @@
-#' plot test result
+#' render test result plots (without eaf plots)
 #' 
 #' 
 #' @export
-plot.frontTestResult = function(x, make.pause = TRUE, colors = NULL) {
+renderFrontTestResult = function(x, colors = NULL) {
   requirePackages(c("ggplot2", "eaf"))
-  
-  checkPause = function()
-    if (make.pause) pause()
   
   # extract some stuff
   data = x$args$data
@@ -28,8 +25,67 @@ plot.frontTestResult = function(x, make.pause = TRUE, colors = NULL) {
   if (is.null(colors))
     colors = rainbow(length(algos))
   
+  plots = list()
+  
   # Ground Zero: Chaos Plot
-  plotChaosPlot(data, var.cols, algo.col, repl.col, colors)
+  plots[[1]] = plotChaosPlot(data, var.cols, algo.col, repl.col, colors)
+  
+
+  # Second Plot: Remove dominated algorithms
+  plots[[2]] = plotDominationSelection(data = x$algos.domination.count, 
+    colors = colors, repl.count = repls)
+
+  # 4th Plot: Multicrit Selection of relevant algos
+  colors.non.dom.algos = colors[algos %in% non.dom.algos]
+  data = subset(data, data[, algo.col] %in% non.dom.algos)
+  plots[[3]] = plotMulticritSelection(data = x$algos.selection.vals, 
+    colors = colors.non.dom.algos)
+
+  # 6th Plot: Show permutation.
+  colors.relevant.algos = colors[algos %in% relevant.algos]
+  colors.best.order = colors[algos %in% best.algo.order]
+  data = subset(data, data[, algo.col] %in% relevant.algos)
+  plots[[4]] = plotAlgorithmOrder(data, best.algo.order, x$split.vals,
+    var.cols, algo.col, repl.col, colors.relevant.algos, colors.best.order)
+
+  # 7th Plot: Final Plot with final reduced common Pareto front
+  plots[[5]] = finalPlot(data, best.algo.order, split.vals, var.cols, algo.col, 
+    repl.col, colors.best.order)
+  
+  return(plots)
+}
+
+
+
+#' plot test result
+#' 
+#' 
+#' @export
+plot.frontTestResult = function(x, make.pause = TRUE, colors = NULL) {
+  requirePackages(c("ggplot2", "eaf"))
+  
+  data = x$args$data
+  formula = x$args$formula
+  algo.col = as.character(formula[[2]])
+
+  algos = unique(data[, algo.col])
+  non.dom.algos = names(which(x$non.dominated.algos))
+  relevant.algos = names(which(x$relevant.algos))
+  
+  
+  checkPause = function()
+    if (make.pause) pause()
+  
+  # First: Fix colors for algos!
+  if (is.null(colors))
+    colors = rainbow(length(algos))
+  
+  plots = renderFrontTestResult(x, colors)
+
+  # print plots:
+  
+  # Ground Zero: Chaos Plot
+  print(plots[[1]])
   checkPause()
   
   # First Plot: EAF of everything
@@ -37,8 +93,7 @@ plot.frontTestResult = function(x, make.pause = TRUE, colors = NULL) {
   checkPause()
   
   # Second Plot: Remove dominated algorithms
-  plotDominationSelection(data = x$algos.domination.count, colors = colors, 
-    repl.count = repls)
+  print(plots[[2]])
   checkPause()
   
   # Third Plot: EAF off all non-dominated algos
@@ -48,25 +103,22 @@ plot.frontTestResult = function(x, make.pause = TRUE, colors = NULL) {
   checkPause()
   
   # 4th Plot: Multicrit Selection of relevant algos
-  plotMulticritSelection(data = x$algos.selection.vals, colors = colors.non.dom.algos)
+  print(plots[[3]])
   checkPause()
   
   # 5th Plot: EAF off all remaining algos
   colors.relevant.algos = colors[algos %in% relevant.algos]
   data = subset(data, data[, algo.col] %in% relevant.algos)
-  plotEAF(data, x$args$formula, colors.relevant.algos)
+  plots[[6]] = plotEAF(data, x$args$formula, colors.relevant.algos)
   checkPause()
- 
+  
   # 6th Plot: Show permutation.
-  colors.best.order = colors[algos %in% best.algo.order]
-  plotAlgorithmOrder(data, best.algo.order, x$split.vals,
-    var.cols, algo.col, repl.col, colors.relevant.algos, colors.best.order)
+  print(plots[[4]])
   checkPause()
   
   # 7th Plot: Final Plot with final reduced common Pareto front
-  finalPlot(data, best.algo.order, split.vals, var.cols, algo.col, repl.col, 
-    colors.best.order)
-  
+  print(plots[[5]])
+
   return(invisible(NULL))
 }
 
@@ -89,7 +141,7 @@ plotChaosPlot = function(data, var.cols, algo.col, repl.col, colors) {
   p = p + ggplot2::ggtitle("All Pareto Optimal Points")
   p = p + ggplot2::scale_colour_manual(values = colors)
   p = p + ggplot2::facet_wrap(reformulate(repl.col))
-  print(p)
+  return(p)
 }
 
 # Second Plot: Plot in how many repls an algo has non.dom points, via barplot
@@ -104,7 +156,7 @@ plotDominationSelection = function(data, colors, repl.count) {
   p = p + ggplot2::scale_fill_manual(values = colors, drop = FALSE)
   p = p + scale_x_discrete(drop = FALSE)
   p = p + ggplot2::geom_hline(yintercept = repl.count / 2, size = 1, alpha = 0.5)
-  print(p)
+  return(p)
 }
 
 # Fourth Plot: The Multicrit Selection ...
@@ -182,7 +234,7 @@ plotMulticritSelection = function(data, colors) {
     )
   p = p + ggplot2::ggtitle("Pareto Front of number of algorithms and algorithm contribution")
   p = p + ggplot2::xlab("Number of algorithms")
-  print(p)
+  return(p)
 }
 
 # First, Third and Fifth Plot: EAF plot.
@@ -202,7 +254,7 @@ plotEAF = function(data, formula, colors) {
 }
 
 # Plot function to visualise the decision tree.
-plotAlgorithmOrder = function (data, best.algo.order, split.vals,
+plotAlgorithmOrder = function(data, best.algo.order, split.vals,
   var.cols, algo.col, repl.col, colors.relevant.algos, colors.best.algo.order) {  
   # Split dataset into it replications
   data.splitted = split(data, data[, repl.col])
@@ -242,7 +294,7 @@ plotAlgorithmOrder = function (data, best.algo.order, split.vals,
     alpha = 0.1, inherit.aes = FALSE)
   p = p + ggplot2::scale_fill_manual(values = colors.best.algo.order, name = "predicted")
   
-  print(p)
+  return(p)
 }
 
 # Final Plot for the common reduced Pareto front
@@ -310,5 +362,5 @@ finalPlot = function(data, best.algo.order, split.vals, var.cols, algo.col, repl
   p = p + ggplot2::xlab(var.cols[1L]) + ggplot2::ylab(var.cols[2L])
   p = p + ggplot2::ggtitle("Reduced common Pareto front")
   p = p + ggplot2::scale_colour_manual(values = colors)
-  print(p)
+  return(p)
 }

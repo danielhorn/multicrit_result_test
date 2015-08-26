@@ -30,26 +30,34 @@ renderFrontTestResult = function(x, colors = NULL) {
   # Ground Zero: Chaos Plot
   plots[[1]] = plotChaosPlot(data, var.cols, algo.col, repl.col, colors)
   
+  # First Plot: EAF of everything
+  plots[[2]] = plotEAF(data, formula, colors)
 
   # Second Plot: Remove dominated algorithms
-  plots[[2]] = plotDominationSelection(data = x$algos.domination.count, 
+  plots[[3]] = plotDominationSelection(data = x$algos.domination.count, 
     colors = colors, repl.count = repls)
 
-  # 4th Plot: Multicrit Selection of relevant algos
+  # Third Plot: EAF off all non-dominated algos
   colors.non.dom.algos = colors[algos %in% non.dom.algos]
   data = subset(data, data[, algo.col] %in% non.dom.algos)
-  plots[[3]] = plotMulticritSelection(data = x$algos.selection.vals, 
+  plots[[4]] = plotEAF(data, x$args$formula, colors.non.dom.algos)
+
+  # 4th Plot: Multicrit Selection of relevant algos
+  plots[[5]] = plotMulticritSelection(data = x$algos.selection.vals, 
     colors = colors.non.dom.algos)
 
-  # 6th Plot: Show permutation.
+  # 5th Plot: EAF off all remaining algos
   colors.relevant.algos = colors[algos %in% relevant.algos]
-  colors.best.order = colors[algos %in% best.algo.order]
   data = subset(data, data[, algo.col] %in% relevant.algos)
-  plots[[4]] = plotAlgorithmOrder(data, best.algo.order, x$split.vals,
+  plots[[6]] = plotEAF(data, x$args$formula, colors.relevant.algos)
+
+  # 6th Plot: Show permutation.
+  colors.best.order = colors[algos %in% best.algo.order]
+  plots[[7]] = plotAlgorithmOrder(data, best.algo.order, x$split.vals,
     var.cols, algo.col, repl.col, colors.relevant.algos, colors.best.order)
 
   # 7th Plot: Final Plot with final reduced common Pareto front
-  plots[[5]] = finalPlot(data, best.algo.order, split.vals, var.cols, algo.col, 
+  plots[[8]] = finalPlot(data, best.algo.order, split.vals, var.cols, algo.col, 
     repl.col, colors.best.order)
   
   return(plots)
@@ -61,63 +69,18 @@ renderFrontTestResult = function(x, colors = NULL) {
 #' 
 #' 
 #' @export
-plot.frontTestResult = function(x, make.pause = TRUE, colors = NULL) {
+plot.frontTestResult = function(x, make.pause = TRUE, ...) {
   requirePackages(c("ggplot2", "eaf"))
-  
-  data = x$args$data
-  formula = x$args$formula
-  algo.col = as.character(formula[[2]])
-
-  algos = unique(data[, algo.col])
-  non.dom.algos = names(which(x$non.dominated.algos))
-  relevant.algos = names(which(x$relevant.algos))
-  
   
   checkPause = function()
     if (make.pause) pause()
   
-  # First: Fix colors for algos!
-  if (is.null(colors))
-    colors = rainbow(length(algos))
+  plots = renderFrontTestResult(x, ...)
   
-  plots = renderFrontTestResult(x, colors)
-
-  # print plots:
-  
-  # Ground Zero: Chaos Plot
-  print(plots[[1]])
-  checkPause()
-  
-  # First Plot: EAF of everything
-  plotEAF(data, formula, colors)
-  checkPause()
-  
-  # Second Plot: Remove dominated algorithms
-  print(plots[[2]])
-  checkPause()
-  
-  # Third Plot: EAF off all non-dominated algos
-  colors.non.dom.algos = colors[algos %in% non.dom.algos]
-  data = subset(data, data[, algo.col] %in% non.dom.algos)
-  plotEAF(data, x$args$formula, colors.non.dom.algos)
-  checkPause()
-  
-  # 4th Plot: Multicrit Selection of relevant algos
-  print(plots[[3]])
-  checkPause()
-  
-  # 5th Plot: EAF off all remaining algos
-  colors.relevant.algos = colors[algos %in% relevant.algos]
-  data = subset(data, data[, algo.col] %in% relevant.algos)
-  plots[[6]] = plotEAF(data, x$args$formula, colors.relevant.algos)
-  checkPause()
-  
-  # 6th Plot: Show permutation.
-  print(plots[[4]])
-  checkPause()
-  
-  # 7th Plot: Final Plot with final reduced common Pareto front
-  print(plots[[5]])
+  for (i in 1:8) {
+    print(plots[[i]])
+    if (i != 8) checkPause()
+  }
 
   return(invisible(NULL))
 }
@@ -239,18 +202,22 @@ plotMulticritSelection = function(data, colors) {
 
 # First, Third and Fifth Plot: EAF plot.
 plotEAF = function(data, formula, colors) {
+  
   # build new formula for eaf
   algo = as.character(formula[[2]])
   repl = as.character(formula[[3]][[3]])
   vars = as.character(formula[[3]][[2]])[-1]
-  new.formula = as.formula(sprintf("%s + %s ~ %s", vars[1L], vars[2L], repl))
   
   fronts = data[, c(vars, algo, repl)]
   fronts[, algo] = factor(fronts[, algo])
   fronts[, repl] = factor(fronts[, repl])
   
-  eafplot(new.formula, groups = get(algo), percentiles = 50, 
-    data = fronts, xlab = vars[1], ylab = vars[2], col = colors, lwd = 2.75)
+  p = eafGGPlot(data = fronts, var.names = vars, group.name = algo, replication.name = repl, 
+    percentiles = 50)
+  p = p + geom_line(size = 2) 
+  p = p + scale_colour_manual(values = c(colors))
+  p = p + guides(linetype = FALSE)
+  return(p)
 }
 
 # Plot function to visualise the decision tree.
@@ -364,3 +331,4 @@ finalPlot = function(data, best.algo.order, split.vals, var.cols, algo.col, repl
   p = p + ggplot2::scale_colour_manual(values = colors)
   return(p)
 }
+

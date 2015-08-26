@@ -93,8 +93,12 @@ plotChaosPlot = function(data, var.cols, algo.col, repl.col, colors) {
   data.splitted = split(data, data[, c(repl.col, algo.col)])
   
   # Apply Pareto-Filt
-  data.splitted = lapply(data.splitted, function(d)
-    d[nds_rank(as.matrix(t(d[, var.cols]))) == 1L, ])
+  data.splitted = lapply(data.splitted, function(d) {
+    if (nrow(d) == 0L)
+      d
+    else
+      d[nds_rank(as.matrix(t(d[, var.cols]))) == 1L, ]
+  })
   
   # remerge data
   data = do.call(rbind, data.splitted)

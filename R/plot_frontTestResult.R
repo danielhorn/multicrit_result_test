@@ -53,7 +53,7 @@ renderFrontTestResult = function(x, colors = NULL) {
 
   # 6th Plot: Show permutation.
   colors.best.order = colors[algos %in% best.algo.order]
-  plots[[7]] = plotAlgorithmOrder(data, best.algo.order, x$split.vals,
+  plots[[7]] = plotAlgorithmOrder(data, best.algo.order, split.vals,
     var.cols, algo.col, repl.col, colors.relevant.algos, colors.best.order)
 
   # 7th Plot: Final Plot with final reduced common Pareto front
@@ -150,34 +150,35 @@ plotMulticritSelection = function(data, colors) {
   ws.part = 0.05 * contr.vals.norm[, 1L] + 0.95 * contr.vals.norm[, 2L]
   max.part = pmax(0.05 * contr.vals.norm[, 1L], 0.95 * contr.vals.norm[, 2L])
   min.index = which.min(max.part + 0.05 * ws.part)
-  multicrit.data[min.index, "points"] = ".2.best.point"
+  multicrit.data = rbind(multicrit.data, multicrit.data[min.index, ])
+  multicrit.data[nrow(multicrit.data), "points"] = ".2.best.point"
   
   rbind.data = rbind(multicrit.data, algo.data)
   
-  # data to add the line of the weighted sum. first in the normalized space
-  # line should end at nof.algos + 1!
-  line.data = data.frame(
-    x = seq(0, (nof.algos + 1) / nof.algos , length.out = 129L),
-    y = seq(0, 0.05 / 0.95 * (nof.algos + 1) / nof.algos , length.out = 129L)
-    )
-  line.data = line.data[-129L, ]
-  
-  # now transform to the real data space
-  line.data$x = line.data$x * diff(range(data$algo.count)) + min(data$algo.count)
-  line.data$y = line.data$y * diff(range(data$contribution)) + min(data$contribution)
-  line.data$line = "Scalar Problem"
+  # Contour lines of the underlying scalarized prob
+  # First make the grid in the "Plot-Space":
+  # Note: We will apply a log scale later, so we need to make the grid in the
+  # log scale
+  cont.data = expand.grid(
+    x = seq(min(data$algo.count) - 0.5, max(data$algo.count) + 0.5, length.out = 64),
+    y = 10^seq(log10(sort(data$contribution)[2]) - 0.5, log10(max(data$contribution)) + 0.5, length.out = 64)
+    #y = seq(min(data$contribution), max(data$contribution), length.out = 64)
+  )
+  # scale with respect to data, not to cont.data
+  cont.data.norm = data.frame(
+    x = (cont.data$x - min(data$algo.count)) / diff(range(data$algo.count)),
+    y = (cont.data$y - min(data$contribution)) / diff(range(data$contribution))
+  )
+  # add z coloum from augmented tschebyscheff
+  aug.tsch = function(x) 
+    pmax(0.05 * x[1L], 0.95 * x[2L]) + 0.05 * (0.05 * x[1L] + 0.95 * x[2L])
+  cont.data$z = apply(cont.data.norm, 1, aug.tsch)
   
   p = ggplot2::ggplot()
-#  p = p + ggplot2::geom_point(ggplot2::aes_string("algo.count", "contribution"),
-#    data = best.point, size = 8, color = "grey50")
   p = p + ggplot2::geom_point(ggplot2::aes_string("algo.count", "contribution",
     color = "algo", shape = "points", size = "points"), data = rbind.data)
-  #p = p + ggplot2::geom_point(ggplot2::aes_string("algo.count", "contribution"),
-  #  data = data, size = 3)
-  #p = p + ggplot2::geom_point(ggplot2::aes_string("algo.count", "contribution", color = "algo"),
-  #  data = algo.data)
-  p = p + ggplot2::geom_line(ggplot2::aes_string(x = "x", y = "y",
-    linetype = "line"), data = line.data)
+  p = p + ggplot2::stat_contour(ggplot2::aes(x = x, y = y, z = z), data = cont.data,
+    breaks = 2^seq(-10, 0, length.out = 31), alpha = 0.7, color = "grey50")
   p = p + ggplot2::scale_y_log10()
   p = p + ggplot2::scale_colour_manual(values = c(colors),  na.value = "black",
     name = "Used Algorithms")
@@ -188,9 +189,8 @@ plotMulticritSelection = function(data, colors) {
       )
   p = p + ggplot2::scale_shape_manual(values = c(16, 10L, 15L),
     name = "Meaning of points", labels = labs)
-  p = p + ggplot2::scale_size_manual(values = c(5, 7, 2.5),
+  p = p + ggplot2::scale_size_manual(values = c(5, 9, 2.5),
     name = "Meaning of points",  labels = labs)
-  p = p + ggplot2::scale_linetype_manual(values = "solid", name = "Meaning of line")
   p = p + ggplot2::scale_x_continuous(limits = c(0.5, NA_real_),
     breaks = 1:nof.algos)#function(x) pretty(x, n = min(5, nof.algos)))
   p = p + ggplot2::guides(
@@ -199,8 +199,9 @@ plotMulticritSelection = function(data, colors) {
     size = ggplot2::guide_legend(order = 2L),
     colour = ggplot2::guide_legend(order = 3L, override.aes = list(shape = 15L, size = 4))
     )
-  p = p + ggplot2::ggtitle("Pareto Front of number of algorithms and algorithm contribution")
-  p = p + ggplot2::xlab("Number of algorithms")
+  p = p + ggplot2::ggtitle("Pareto front of number of algorithms and algorithm contribution")
+  p = p + ggplot2::xlab("number of algorithms")
+  p = p + ggplot2::ylab("optimality gap")
   return(p)
 }
 

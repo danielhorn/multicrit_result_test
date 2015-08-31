@@ -175,10 +175,10 @@ plotMulticritSelection = function(data, colors) {
   cont.data$z = apply(cont.data.norm, 1, aug.tsch)
   
   p = ggplot2::ggplot()
-  p = p + ggplot2::geom_point(ggplot2::aes_string("algo.count", "contribution",
-    color = "algo", shape = "points", size = "points"), data = rbind.data)
   p = p + ggplot2::stat_contour(ggplot2::aes(x = x, y = y, z = z), data = cont.data,
     breaks = 2^seq(-10, 0, length.out = 31), alpha = 0.7, color = "grey50")
+  p = p + ggplot2::geom_point(ggplot2::aes_string("algo.count", "contribution",
+    color = "algo", shape = "points", size = "points"), data = rbind.data)
   p = p + ggplot2::scale_y_log10()
   p = p + ggplot2::scale_colour_manual(values = c(colors),  na.value = "black",
     name = "Used Algorithms")

@@ -35,7 +35,7 @@ renderFrontTestResult = function(x, colors = NULL) {
 
   # Second Plot: Remove dominated algorithms
   plots[[3]] = plotDominationSelection(data = x$algos.domination.count, 
-    colors = colors, repl.count = repls)
+    colors = colors, repl.count = repls, algo.col = algo.col)
 
   # Third Plot: EAF off all non-dominated algos
   colors.non.dom.algos = colors[algos %in% non.dom.algos]
@@ -113,14 +113,14 @@ plotChaosPlot = function(data, var.cols, algo.col, repl.col, colors) {
 
 # Second Plot: Plot in how many repls an algo has non.dom points, via barplot
 
-plotDominationSelection = function(data, colors, repl.count) {
+plotDominationSelection = function(data, colors, repl.count, algo.col) {
   
   data.long = unlist(lapply(1:length(data), function(i) rep(names(data)[i], data[i])))
   data.long = data.frame(algo = factor(data.long, levels = names(data)))
   
   p = ggplot2::ggplot(data.long, aes(algo, fill = algo))
   p = p + ggplot2::geom_bar()
-  p = p + ggplot2::scale_fill_manual(values = colors, drop = FALSE)
+  p = p + ggplot2::scale_fill_manual(values = colors, drop = FALSE, name = algo.col)
   p = p + scale_x_discrete(drop = FALSE)
   p = p + ggplot2::geom_hline(yintercept = repl.count / 2, size = 1, alpha = 0.5)
   return(p)

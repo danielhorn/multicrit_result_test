@@ -22,9 +22,10 @@ mainTestProcedure = function(formula, data, alpha, indicator = "hv",
   
   # Normalize Data
   if (normalize)
-    for (i in seq_along(unique(data[, repl.col])))
-      data[data[, repl.col] == i, var.cols] = normalize(data[data[, repl.col] == i, var.cols],
-        method = "range", range = c(0, 1))
+    data[, var.cols] = normalize(data[, var.cols], method = "range", range = c(0, 1))
+    #for (i in seq_along(unique(data[, repl.col])))
+    #  data[data[, repl.col] == i, var.cols] = normalize(data[data[, repl.col] == i, var.cols],
+    #    method = "range", range = c(0, 1))
   
   # Select contribution function with respect to indicator character
   contrFun = switch(indicator,
@@ -60,7 +61,7 @@ mainTestProcedure = function(formula, data, alpha, indicator = "hv",
     qualitiy.index = 0
   }
   if (length(algos) > 1L) {
-    perms = sortedParetoFrontClassification(formula, data, cp = cp)
+    perms = sortedParetoFrontClassification(formula, data, contrFun, cp = cp)
     split.vals = perms$split.vals
     #qualitiy.index = perms$mmce
     perms  = perms$perm
@@ -85,7 +86,6 @@ mainTestProcedure = function(formula, data, alpha, indicator = "hv",
     algos.selection.vals = selected.algos$algo.contrs,
     best.algo.order = perms,
     split.vals = split.vals,
-    #qualitiy.index = qualitiy.index,
     args = args
   )
   res = addClasses(res, "frontTestResult")

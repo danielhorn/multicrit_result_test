@@ -51,13 +51,13 @@ renderFrontTestResult = function(x, colors = NULL) {
   data = subset(data, data[, algo.col] %in% relevant.algos)
   plots[[6]] = plotEAF(data, x$args$formula, colors.relevant.algos)
 
-  # 6th Plot: Show permutation.
+  ## 6th Plot: Show permutation.
   colors.best.order = colors[algos %in% best.algo.order]
-  plots[[7]] = plotAlgorithmOrder(data, best.algo.order, split.vals,
-    var.cols, algo.col, repl.col, colors.relevant.algos, colors.best.order)
+  #plots[[7]] = plotAlgorithmOrder(data, best.algo.order, split.vals,
+  #  var.cols, algo.col, repl.col, colors.relevant.algos, colors.best.order)
 
   # 7th Plot: Final Plot with final reduced common Pareto front
-  plots[[8]] = finalPlot(data, best.algo.order, split.vals, var.cols, algo.col, 
+  plots[[7]] = finalPlot(data, best.algo.order, split.vals, var.cols, algo.col, 
     repl.col, colors.best.order)
   
   return(plots)
@@ -77,9 +77,10 @@ plot.frontTestResult = function(x, make.pause = TRUE, ...) {
   
   plots = renderFrontTestResult(x, ...)
   
-  for (i in 1:8) {
+  nof.plots = length(plots)
+  for (i in 1:nof.plots) {
     print(plots[[i]])
-    if (i != 8) checkPause()
+    if (i != nof.plots) checkPause()
   }
 
   return(invisible(NULL))
@@ -269,7 +270,6 @@ plotAlgorithmOrder = function(data, best.algo.order, split.vals,
   return(p)
 }
 
-# Final Plot for the common reduced Pareto front
 finalPlot = function(data, best.algo.order, split.vals, var.cols, algo.col, repl.col, colors) {
   split.vals = c(0, split.vals, 1)
   data.splitted = split(data, data[, repl.col])
@@ -278,14 +278,15 @@ finalPlot = function(data, best.algo.order, split.vals, var.cols, algo.col, repl
   data.splitted = lapply(data.splitted, function(d)
     d[nds_rank(as.matrix(t(d[, var.cols]))) == 1, ])
   
-  # Each algo is only interesting in its split.vals. 
+  # Each algo is only interesting in its own "area" defined by split.vals 
+  # Values for "denormalization"
+  min.val = min(data[, var.cols[1]])
+  max.val = max(data[, var.cols[1]])
   reduceData = function(d) {
-    min.val = min(d[, var.cols[1]])
-    max.val = max(d[, var.cols[1]])
     split.vals2 = min.val + split.vals * (max.val - min.val)
     #d = subset(d, d[, algo.col] %in% best.algo.order)
     do.call(rbind, lapply(seq_along(best.algo.order), function(i) {
-      is.in = d[, var.cols[1]] > split.vals2[i] & d[, var.cols[1]] < split.vals2[i + 1]
+      is.in = d[, var.cols[1]] >= split.vals2[i] & d[, var.cols[1]] <= split.vals2[i + 1]
       subset(d, d[, algo.col] %in% best.algo.order[i] & is.in)
     }))
   }
@@ -328,6 +329,17 @@ finalPlot = function(data, best.algo.order, split.vals, var.cols, algo.col, repl
   # an add this id to the group coloum
   d$group = factor(paste(d[, 4], ids))
   names(d)[4] = "colour"
+  
+  # last but not least - we loose the max values atm, so add points for them
+  # at point with best x1 value:
+  # use 3. quartile of raw data for max values
+  max.vals = apply(sapply(data.splitted, function(dd) apply(dd[, var.cols], 2, max)),
+    1, quantile, probs = 0.75)
+  best.x1 = d[1L, ]
+  best.x1$X2 = max.vals[2L]
+  best.x2 = d[nrow(d), ]
+  best.x2$X1 = max.vals[1L]
+  d = rbind(best.x1, d, best.x2)
   
   p = ggplot2::ggplot(d, ggplot2::aes_string("X1", "X2", colour = "colour", group = "group"))
   p = p + ggplot2::geom_line(size = 2)

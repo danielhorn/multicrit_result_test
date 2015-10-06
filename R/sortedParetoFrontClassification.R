@@ -23,37 +23,42 @@
 # @return [\code{character}]
 #   The preferred order of algorithms.
 
-sortedParetoFrontClassification = function(formula, data, cp) {
+sortedParetoFrontClassification = function(formula, data, contrFun, cp) {
   requirePackages("rpart")  
   
-  algo = as.character(formula[[2]])
-  repl = as.character(formula[[3]][[3]])
-  vars = as.character(formula[[3]][[2]])[-1]
+  algo.col = as.character(formula[[2]])
+  repl.col = as.character(formula[[3]][[3]])
+  var.cols = as.character(formula[[3]][[2]])[-1]
   
-  # Split dataset into it replications
-  data.splitted = split(data, data[, repl])
   
-  # Apply Pareto-Filt
-  data.splitted = lapply(data.splitted, function(d)
-    d[nds_rank(as.matrix(t(d[, vars]))) == 1, ])
+  # Use the EAF points to learn the rpart
+  # So, first, calculate them, exclude percentile coloumn
+  eaf.front = eaf:::eafs(points = data[, var.cols], sets = data[, repl.col],
+    groups = data[, algo.col], percentiles = 50)[, -(length(var.cols) + 1)]
   
-  # normalize to [0, 1] and we only need var value and algo
-  data.splitted = lapply(data.splitted, function(d)
-    data.frame(value = normalize(d[, vars[1]], method = "range"), algo = d[, algo]))
+  # Apply Pareto-filter
+  var.ids = 1:(ncol(eaf.front) - 1L)
+  eaf.front = eaf.front[nds_rank(as.matrix(t(eaf.front[, var.ids]))) == 1L, ]
   
-  # now merge everything and sort along value
-  data.classif = Reduce(rbind, data.splitted)
-  data.classif = data.classif[order(data.classif$value), ]
+  # calculate weights for the points - each point has its own contribution
+  # as its weight
+  weights = sapply(seq_row(eaf.front),
+    function(i)
+      contrFun(eaf.front[-i, -ncol(eaf.front)], eaf.front[, -ncol(eaf.front)])
+    )
   
-  # now use rpart to get permutation
-  mod = rpart(algo ~ value, data = data.classif, maxsurrogate = 0)
+  # exclude one variable
+  eaf.front = eaf.front[, -max(var.ids)]
+  # now use rpart to get order of algorithms
+  mod = rpart(groups ~ ., data = eaf.front, weights = weights, minsplit = 1)
   mod = prune(mod, cp = cp)
   
   # i don't see a "good" way to get the perm vector from the mod
   # so, get the vector of split values from the model, sort them, add 2 new
   # max / min values, predict with 1 value in each interval and tada
+  # FIXME: This works only for 2 var.cols atm. 
   split.vals = sort(mod$splits[, "index"])
-  pred.vals = data.frame(value = rowMeans(cbind(
+  pred.vals = data.frame(X1 = rowMeans(cbind(
     c(min(split.vals) - 1, split.vals),
     c(split.vals, max(split.vals) + 1))
     ))
@@ -66,13 +71,5 @@ sortedParetoFrontClassification = function(formula, data, cp) {
   perm = perm[c(TRUE, unequal.inds)]
   split.vals = split.vals[unequal.inds]
   
-  # Quick 10 fold crossvalidation for error estimation
-  ids = sample(rep(1:10, length.out = nrow(data.classif)))
-  mmce = 0
-  for (i in 1:10) {
-    mod = rpart(algo ~ value, data = data.classif[ids != i, ], maxsurrogate = 0)
-    mod = prune(mod, cp = cp)
-    mmce = mmce + mean(predict(mod, data.classif[ids == i, ], type = "class") != data.classif[ids == i, "algo"]) / 10
-  }
-  return(list(perm = perm, split.vals = split.vals, mmce = mmce))
+  return(list(perm = perm, split.vals = split.vals))
 }

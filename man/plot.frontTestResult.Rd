@@ -4,7 +4,7 @@
 \alias{plot.frontTestResult}
 \title{plot test result}
 \usage{
-\method{plot}{frontTestResult}(x, make.pause = TRUE)
+\method{plot}{frontTestResult}(x, make.pause = TRUE, ...)
 }
 \description{
 plot test result

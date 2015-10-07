@@ -4,9 +4,8 @@
 \alias{mainTestProcedure}
 \title{Main Test Procedure}
 \usage{
-mainTestProcedure(formula, data, alpha, indicator = "hv",
-  perm.test = "mean.invs", kappa = 1e-06, normalize = TRUE,
-  ref.point = c(1.1, 1.1), lambda = 100, n = 1e+05)
+mainTestProcedure(formula, data, alpha, indicator = "hv", normalize = TRUE,
+  ref.point = c(1.1, 1.1), lambda = 100, cp = 0.1)
 }
 \arguments{
 \item{formula}{[\code{formula}] \cr

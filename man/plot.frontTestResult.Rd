@@ -2,11 +2,24 @@
 % Please edit documentation in R/plot_frontTestResult.R
 \name{plot.frontTestResult}
 \alias{plot.frontTestResult}
-\title{plot test result}
+\title{Plots any MBO result objects. Plots for X-Space, Y-Space and any coloumn in
+the optimization path are available. This function uses}
 \usage{
 \method{plot}{frontTestResult}(x, make.pause = TRUE, ...)
 }
+\arguments{
+\item{x}{[\code{frontTestResult}]\cr
+Result object from function \link{mainTestProcedure}.}
+
+\item{make.pause}{[\code{logical(1)}]\cr
+Should the process be paused after each iteration?
+Default is \code{TRUE}.}
+}
+\value{
+Nothing.
+}
 \description{
-plot test result
+Plots any MBO result objects. Plots for X-Space, Y-Space and any coloumn in
+the optimization path are available. This function uses
 }
 

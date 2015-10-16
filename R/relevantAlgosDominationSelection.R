@@ -1,20 +1,24 @@
+# First selection step: select all algorithms that have non-dominated points in
+# more than eta replications
+#
+# Output:
+# Named list of length 2:
+#    relevant.algos: Named logical vector - TRUE for selected algorithm
+#    counts: Named numeric vector - number of replications with non-dominated
+#            points for each algorithm
 
+relevantAlgosDominationSelection = function(data, var.cols, algo.col, repl.col, eta) {
 
-relevantAlgosDominationSelection = function(data, formula) {
-  algo.col = as.character(formula[[2]])
-  repl.col = as.character(formula[[3]][[3]])
-  var.cols = as.character(formula[[3]][[2]])[-1]
-  
   data.splitted = split(data, data[, repl.col])
   
   data.splitted = lapply(data.splitted, function(d)
-    d[nds_rank(as.matrix(t(d[, var.cols]))) == 1, ])
+    d[nds_rank(as.matrix(t(d[, var.cols]))) == 1L, ])
   
   non.dom.algos = lapply(data.splitted, function(d) unique(d[, algo.col]))
   
   counts = table(unlist(non.dom.algos))
   
-  relevant.algos = counts > length(data.splitted) / 2
+  relevant.algos = counts > length(data.splitted) * eta
   
-  list(relevant.algos = relevant.algos, algo.contrs = counts)
+  list(relevant.algos = relevant.algos, counts = counts)
 }

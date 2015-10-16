@@ -36,23 +36,21 @@ data.vehicle.true = myDataPreproc(data.vehicle, TRUE)
 data.mnist.true = myDataPreproc(data.mnist, TRUE)
 data.protein.true = myDataPreproc(data.protein, TRUE)
 
-formula = solver ~ error + execTime | repl
-indicators = c("hv", "epsilon", "r2")
-normalize = TRUE
+data = data.protein.false
+var.cols = c("error", "execTime")
+algo.col = "solver"
+repl.col = "repl"
+indicator = "hv"
 ref.point = c(1.1, 1.1)
 lambda = 100
+eta = 0.5
+w = c(0.05, 0.95)
+cp = 0.1
+normalize = TRUE
 colors = c("violet", "turquoise", "green", "red", "black", "blue")
 
-formula = solver ~ error + execTime | repl
-data = data.protein.false
-indicator = "hv"
-normalize = TRUE
-ref.point = c(1.1, 1.1)
-lambda = 100
-cp = 0.1
-
-res = mainTestProcedure (formula = formula, data = data, 
-  indicator = indicator, normalize = normalize,
-  ref.point = ref.point, lambda = lambda, cp = cp)
+res = mainTestProcedure(data = data, var.cols = var.cols, algo.col = algo.col,
+  repl.col = repl.col, indicator = indicator, ref.point = ref.point,
+  lambda = lambda, eta = eta, w = w, cp = cp, normalize = normalize) 
 print(res)
 plot(res, colors = colors, FALSE)

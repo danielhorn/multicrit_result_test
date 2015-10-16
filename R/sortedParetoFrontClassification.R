@@ -23,13 +23,8 @@
 # @return [\code{character}]
 #   The preferred order of algorithms.
 
-sortedParetoFrontClassification = function(formula, data, contrFun, cp) {
+sortedParetoFrontClassification = function(data, var.cols, algo.col, repl.col, contrFun, cp) {
   requirePackages("rpart")  
-  
-  algo.col = as.character(formula[[2]])
-  repl.col = as.character(formula[[3]][[3]])
-  var.cols = as.character(formula[[3]][[2]])[-1]
-  
   
   # Use the EAF points to learn the rpart
   # So, first, calculate them, exclude percentile coloumn

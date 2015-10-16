@@ -3,9 +3,9 @@
 #' @export
 
 print.frontTestResult = function(x) {
-  algo.col = as.character(x$args$formula[[2]])
-  var.cols = as.character(x$args$formula[[3]][[2]])[-1]
-  repl.col = as.character(x$args$formula[[3]][[3]])
+  algo.col = x$args$algo.col
+  var.cols = x$args$var.col
+  repl.col = x$args$repl.col
   
   catf("Welcome to package PFPT main test procedure.\n")
   catf("Let's have a look the parameters you specified:")
@@ -33,8 +33,6 @@ number of algorithms is made by these %i algorithms:", sum(x$relevant.algos))
   catf("\n")
   
   catf("Favored order of algorithms, printed with low values of %s first:",
-    as.character(formula[[3]][[2]])[2])
+    var.cols[1L])
   catf("[1] %s", collapse(as.character(x$best.algo.order), sep = " - "))
-  #catf("[%d] %s; Qualitiy index: %1.2f", i, collapse(as.character(sign.perms[[i]]), sep = " - "),
-  #  x$qualitiy.index[i])
 }

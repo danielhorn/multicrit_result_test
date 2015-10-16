@@ -4,19 +4,79 @@
 \alias{mainTestProcedure}
 \title{Main Test Procedure}
 \usage{
-mainTestProcedure(formula, data, alpha, indicator = "hv", normalize = TRUE,
-  ref.point = c(1.1, 1.1), lambda = 100, cp = 0.1)
+mainTestProcedure(data, var.cols, algo.col, repl.col, indicator = "hv",
+  ref.point = c(1.1, 1.1), lambda = 100, eta = 0.5, w = c(0.05, 0.95),
+  cp = 0.1, normalize = TRUE)
 }
 \arguments{
-\item{formula}{[\code{formula}] \cr
-Formula to specify the variables: algorithms ~ var1 + var2 | repl}
-
 \item{data}{[\code{data.frame}] \cr
-Data for the test. Must contain all variables of the formula, all other
-variables are ignored.}
+Data to be analysed. Must contain all \code{var.cols}, \code{algo.col}
+and \code{repl.col}. Should \code{var.cols} form a Pareto front for every
+combination of \code{repl.col} and \code{algo.col}.}
 
-\item{alpa}{[\code{numeric(1)}] \cr
-Alpha value for the tests.}
+\item{var.cols}{[\code{character(2)}] \cr
+Names of columns with containing the values of the Pareto fronts.}
+
+\item{algo.col}{[\code{character(1)}] \cr
+Name of column containing the particular algorithm.}
+
+\item{repl.col}{[\code{character(1)}] \cr
+Name of column containing the particular algorithm.}
+
+\item{indicator}{[\code{character(1)}] \cr
+Which multi-objective indicator should be used? Possible values are: \cr
+ \dQuote{hv}: Dominated Hypervolume (S-Metric), the default \cr
+ \dQuote{epsilon}: epsilon-indicator \cr
+ \dQuote{r2}: R2-indicator \cr}
+
+\item{ref.point}{[\code{numeric(2)}] \cr
+Reference point for the hypervolume indicator. Default is c(1.1, 1.1)}
+
+\item{lambda}{[\code{numeric(1)}] \cr
+Number of vector used in the calculation of the R2-indicator. Default is 100.}
+
+\item{eta}{[\code{numeric(1)}] \cr
+In how many replications each algorithm must have non-dominated points
+to be selected in the first selection step? Must be in [0, 1] - 0.5
+requres non-dominated points more than in half of all replications. Default is 0.5}
+
+\item{w}{[\code{numeric(2)}] \cr
+Weight vector for the augmented Tschebbyscheff Norm in the second selection
+stept. The first elements corresponds to the number of algorithms, the second
+to the optimality gap. If you want to have a low optimality gap, the second
+element of w should be set to an high value, if a low number of algorithms
+is more important the first element must be high. All positive real weights
+are allowed and will be normalized to sum(w) = 1. Default is c(0.05, 0.95).}
+
+\item{cp}{[\code{numeric(1)}] \cr
+Complexity parameter of the decision tree used in step 3. Same parameter as
+in \link[rpart]{rpart}. Default is 0.1.}
+
+\item{normalize}{[\code{logical(1)}] \cr
+  Should the data be normalized to [0, 1]? Default is TRUE.}
+}
+\value{
+Object of class \code{frontTestResult}. Named list with the elements:
+
+\itemize{
+  \item{non.dominated.algos [\code{logical}]}{Named vector, each element
+    corresponds to one algorithm. TRUE if algorithm is selected in step 1.}
+  \item{algos.domination.count [\code{numeric}]}{Named vector, each element
+    corresponds to one algorithm. Number of replications with non-dominated
+    points for each algorithm.}
+  \item{relevant.algos [\code{logical}]}{Named vector, each element
+    corresponds to one algorithm selected in step 1. TRUE if the algorithm
+    is selected in step 2.}
+  \item{algos.selection.vals [\code{data.frame}]}{Data.frame with 4 cols and
+    2^(number of algorithms after in step 2) - 1 rows. First cols  active in
+    this subset. Last 2 rows are numeric. First is the number of algos in this
+    subset, second one the optimality gap..}
+  \item{best.algo.order [\code{Factor}]}{Vector gives the order of the algorithms
+    on the common Pareto front, algorithms low values of the first var.col first.}
+  \item{split.vals [\code{numeric}]}{Split values between the algorithms given
+    in best.algo.order.}
+  \item{args [\code{list}] List containing all input arguments}
+}
 }
 \description{
 Main Test Procedure

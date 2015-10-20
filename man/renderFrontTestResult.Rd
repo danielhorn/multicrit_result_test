@@ -2,7 +2,8 @@
 % Please edit documentation in R/plot_frontTestResult.R
 \name{renderFrontTestResult}
 \alias{renderFrontTestResult}
-\title{render test result plots (without eaf plots)}
+\title{Render plots for a frontTestResult Object. In contrary to the plot-function
+the redner function does not print but return the ggplot-objects.}
 \usage{
 renderFrontTestResult(x, colors = NULL)
 }
@@ -13,7 +14,22 @@ Result object from function \link{mainTestProcedure}.}
 \item{colors}{[\code{character}] \cr
   Vector of colors for plotting. Length must be equal to number of algorithms.}
 }
+\value{
+[\code{list(7)}]
+  List of 7 ggplot objects - each vizualising one step of the procedure:
+  \itemize{
+  \item{1} Raw data as scatter plots - one scatter plot per replication
+  \item{2} EAF plot of all data points
+  \item{3} Bar plot - in yhow many replications does each algorithm have non-
+    dominated points?
+  \item{4} EAF plot of all remaining algorithms
+  \item{5} Plot of the multicrit algorithm selection
+  \item{6} EAF plot of all remaining algorithms
+  \item{7} Plot of the final common Pareto front
+}
+}
 \description{
-render test result plots (without eaf plots)
+Render plots for a frontTestResult Object. In contrary to the plot-function
+the redner function does not print but return the ggplot-objects.
 }
 

@@ -1,9 +1,23 @@
-#' render test result plots (without eaf plots)
+#' Render plots for a frontTestResult Object. In contrary to the plot-function
+#' the redner function does not print but return the ggplot-objects.
 #'
 #' @param x [\code{frontTestResult}]\cr
 #'   Result object from function \link{mainTestProcedure}.
 #' @param colors [\code{character}] \cr
 #'   Vector of colors for plotting. Length must be equal to number of algorithms.
+#' 
+#' @return [\code{list(7)}]
+#'   List of 7 ggplot objects - each vizualising one step of the procedure:
+#'   \itemize{
+#'   \item{1} Raw data as scatter plots - one scatter plot per replication
+#'   \item{2} EAF plot of all data points
+#'   \item{3} Bar plot - in yhow many replications does each algorithm have non-
+#'     dominated points?
+#'   \item{4} EAF plot of all remaining algorithms
+#'   \item{5} Plot of the multicrit algorithm selection
+#'   \item{6} EAF plot of all remaining algorithms
+#'   \item{7} Plot of the final common Pareto front
+#' }
 #' 
 #' @export
 renderFrontTestResult = function(x, colors = NULL) {
@@ -36,28 +50,28 @@ renderFrontTestResult = function(x, colors = NULL) {
   plots = list()
   
   # Ground Zero: Chaos Plot
-  plots[[1]] = plotChaosPlot(data, var.cols, algo.col, repl.col, colors)
+  plots[[1L]] = plotChaosPlot(data, var.cols, algo.col, repl.col, colors)
   
   # First Plot: EAF of everything
-  plots[[2]] = plotEAF(data, var.cols, algo.col, repl.col, colors)
+  plots[[2L]] = plotEAF(data, var.cols, algo.col, repl.col, colors)
 
   # Second Plot: Remove dominated algorithms
-  plots[[3]] = plotDominationSelection(data = x$algos.domination.count, 
+  plots[[3L]] = plotDominationSelection(data = x$algos.domination.count, 
     colors = colors, repl.count = repls, algo.col = algo.col, eta = x$args$eta)
 
   # Third Plot: EAF off all non-dominated algos
   colors.non.dom.algos = colors[algos %in% non.dom.algos]
   data = subset(data, data[, algo.col] %in% non.dom.algos)
-  plots[[4]] = plotEAF(data, var.cols, algo.col, repl.col, colors.non.dom.algos)
+  plots[[4L]] = plotEAF(data, var.cols, algo.col, repl.col, colors.non.dom.algos)
 
   # 4th Plot: Multicrit Selection of relevant algos
-  plots[[5]] = plotMulticritSelection(data = x$algos.selection.vals, 
+  plots[[5L]] = plotMulticritSelection(data = x$algos.selection.vals, 
     colors = colors.non.dom.algos, w = x$args$w)
 
   # 5th Plot: EAF off all remaining algos
   colors.relevant.algos = colors[algos %in% relevant.algos]
   data = subset(data, data[, algo.col] %in% relevant.algos)
-  plots[[6]] = plotEAF(data, var.cols, algo.col, repl.col, colors.relevant.algos)
+  plots[[6L]] = plotEAF(data, var.cols, algo.col, repl.col, colors.relevant.algos)
 
   ## 6th Plot: Show permutation.
   colors.best.order = colors[algos %in% best.algo.order]
@@ -65,15 +79,13 @@ renderFrontTestResult = function(x, colors = NULL) {
   #  var.cols, algo.col, repl.col, colors.relevant.algos, colors.best.order)
 
   # 7th Plot: Final Plot with final reduced common Pareto front
-  plots[[7]] = finalPlot(data, best.algo.order, split.vals, var.cols, algo.col, 
+  plots[[7L]] = finalPlot(data, best.algo.order, split.vals, var.cols, algo.col, 
     repl.col, colors.best.order)
   
   return(plots)
 }
 
-#' Plots any MBO result objects. Plots for X-Space, Y-Space and any coloumn in
-#' the optimization path are available. This function uses 
-#' 
+#' Plot-function for \code{frontTestResult}-objects. 
 #' 
 #' @param x [\code{frontTestResult}]\cr
 #'   Result object from function \link{mainTestProcedure}.
@@ -88,6 +100,8 @@ renderFrontTestResult = function(x, colors = NULL) {
 
 plot.frontTestResult = function(x, make.pause = TRUE, ...) {
   requirePackages(c("ggplot2", "eaf"))
+  
+  assertFlag(make.pause)
   
   checkPause = function()
     if (make.pause) pause()

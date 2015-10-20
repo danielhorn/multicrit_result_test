@@ -2,8 +2,7 @@
 % Please edit documentation in R/plot_frontTestResult.R
 \name{plot.frontTestResult}
 \alias{plot.frontTestResult}
-\title{Plots any MBO result objects. Plots for X-Space, Y-Space and any coloumn in
-the optimization path are available. This function uses}
+\title{Plot-function for \code{frontTestResult}-objects.}
 \usage{
 \method{plot}{frontTestResult}(x, make.pause = TRUE, ...)
 }
@@ -22,7 +21,6 @@ Not used.}
 Nothing.
 }
 \description{
-Plots any MBO result objects. Plots for X-Space, Y-Space and any coloumn in
-the optimization path are available. This function uses
+Plot-function for \code{frontTestResult}-objects.
 }
 

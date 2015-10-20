@@ -11,7 +11,7 @@ mainTestProcedure(data, var.cols, algo.col, repl.col, indicator = "hv",
 \arguments{
 \item{data}{[\code{data.frame}] \cr
 Data to be analysed. Must contain all \code{var.cols}, \code{algo.col}
-and \code{repl.col}. Should \code{var.cols} form a Pareto front for every
+and \code{repl.col}. \code{var.cols} should form a Pareto front for every
 combination of \code{repl.col} and \code{algo.col}.}
 
 \item{var.cols}{[\code{character(2)}] \cr

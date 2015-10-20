@@ -45,8 +45,8 @@ sortedParetoFrontClassification = function(data, var.cols, algo.col, repl.col, c
   # exclude one variable
   eaf.front = eaf.front[, -max(var.ids)]
   # now use rpart to get order of algorithms
-  mod = rpart(groups ~ ., data = eaf.front, weights = weights, minsplit = 1)
-  mod = prune(mod, cp = cp)
+  mod = rpart::rpart(groups ~ ., data = eaf.front, weights = weights, minsplit = 1)
+  mod = rpart::prune(mod, cp = cp)
   
   # i don't see a "good" way to get the perm vector from the mod
   # so, get the vector of split values from the model, sort them, add 2 new

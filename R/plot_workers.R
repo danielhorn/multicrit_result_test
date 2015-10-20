@@ -44,7 +44,7 @@ plotDominationSelection = function(data, colors, repl.count, algo.col, eta) {
   data.long = unlist(lapply(1:length(data), function(i) rep(names(data)[i], data[i])))
   data.long = data.frame(algo = factor(data.long, levels = names(data)))
   
-  p = ggplot2::ggplot(data.long, aes(algo, fill = algo))
+  p = ggplot2::ggplot(data.long, aes_string("algo", fill = "algo"))
   p = p + ggplot2::geom_bar()
   p = p + ggplot2::scale_fill_manual(values = colors, drop = FALSE, name = algo.col)
   p = p + scale_x_discrete(drop = FALSE)

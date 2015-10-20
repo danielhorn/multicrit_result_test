@@ -29,13 +29,13 @@ plotAlgorithmOrder = function(data, best.algo.order, split.vals,
   )
   
   # now the plotting
-  p = ggplot2::ggplot(data.long, ggplot2::aes(x = value, y = repl, col = algo))
+  p = ggplot2::ggplot(data.long, ggplot2::aes_string(x = "value", y = "repl", col = "algo"))
   p = p + ggplot2::geom_point(size = 4)
   p = p + ggplot2::xlab(paste("Normalized", var.cols[1])) + ggplot2::ylab("Replication")
   p = p + ggplot2::scale_y_continuous(breaks = 1:max(data[, repl.col]))
   p = p + ggplot2::scale_color_manual(values = colors.relevant.algos, name = "observed")
   p = p + geom_rect(data = data.geom.rect,
-    aes(xmin = xmin, ymin = ymin, xmax = xmax, ymax = ymax, fill = predicted),
+    aes_string(xmin = "xmin", ymin = "ymin", xmax = "xmax", ymax = "ymax", fill = "predicted"),
     alpha = 0.1, inherit.aes = FALSE)
   p = p + ggplot2::scale_fill_manual(values = colors.best.algo.order, name = "predicted")
   

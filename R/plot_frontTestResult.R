@@ -1,9 +1,16 @@
 #' render test result plots (without eaf plots)
-#' 
+#'
+#' @param x [\code{frontTestResult}]\cr
+#'   Result object from function \link{mainTestProcedure}.
+#' @param colors [\code{character}] \cr
+#'   Vector of colors for plotting. Length must be equal to number of algorithms.
 #' 
 #' @export
 renderFrontTestResult = function(x, colors = NULL) {
   requirePackages(c("ggplot2", "eaf"))
+  
+  assertClass(x, "frontTestResult")
+  assertCharacter(colors, len = length(algos))
   
   # extract some stuff
   data = x$args$data
@@ -23,6 +30,8 @@ renderFrontTestResult = function(x, colors = NULL) {
   # First: Fix colors for algos!
   if (is.null(colors))
     colors = rainbow(length(algos))
+  else
+    assertCharacter(colors, len = length(algos))
   
   plots = list()
   
@@ -71,6 +80,8 @@ renderFrontTestResult = function(x, colors = NULL) {
 #' @param make.pause [\code{logical(1)}]\cr
 #'   Should the process be paused after each iteration?
 #'   Default is \code{TRUE}.
+#' @param ... [\code{any}] \cr
+#'   Not used.
 #' @return Nothing.
 #'   
 #' @export

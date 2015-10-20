@@ -14,6 +14,9 @@ Result object from function \link{mainTestProcedure}.}
 \item{make.pause}{[\code{logical(1)}]\cr
 Should the process be paused after each iteration?
 Default is \code{TRUE}.}
+
+\item{...}{[\code{any}] \cr
+Not used.}
 }
 \value{
 Nothing.

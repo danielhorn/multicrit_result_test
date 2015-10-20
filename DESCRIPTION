@@ -1,6 +1,6 @@
-Package: PFPT
-Title: Pareto Front Performance Test
-Description: Test for comparison of multicrit algorithm tuning results 
+Package: OMOAS
+Title: Offline Multi-Objective Algorithm Selection
+Description: Method for analysing data from offline multi-objective algorithm selection.
 Authors@R: person("Daniel", "Horn", email = "daniel.horn@tu-dortmund.de", role = c("aut", "cre"))
 URL: https://github.com/danielhorn/multicrit_result_test
 BugReports: https://github.com/danielhorn/multicrit_result_test/issues
@@ -11,10 +11,11 @@ Imports:
     checkmate,
     BBmisc,
     ggplot2,
-    Rcpp
+    emoa,
+    eaf,
+    rpart
 Suggests: 
     testthat
 LazyData: yes
 ByteCompile: yes
 Version: 0.1
-LinkingTo: Rcpp

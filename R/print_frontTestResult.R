@@ -1,8 +1,13 @@
 #' print test result
 #' 
+#' @param x [\code{frontTestResult}]\cr
+#'   Result object from function \link{mainTestProcedure}.
+#' @param ... [\code{any}] \cr
+#'   Not used.
+#'   
 #' @export
 
-print.frontTestResult = function(x) {
+print.frontTestResult = function(x, ...) {
   algo.col = x$args$algo.col
   var.cols = x$args$var.col
   repl.col = x$args$repl.col

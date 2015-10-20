@@ -4,7 +4,14 @@
 \alias{print.frontTestResult}
 \title{print test result}
 \usage{
-\method{print}{frontTestResult}(x)
+\method{print}{frontTestResult}(x, ...)
+}
+\arguments{
+\item{x}{[\code{frontTestResult}]\cr
+Result object from function \link{mainTestProcedure}.}
+
+\item{...}{[\code{any}] \cr
+  Not used.}
 }
 \description{
 print test result

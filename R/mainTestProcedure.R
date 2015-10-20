@@ -2,7 +2,7 @@
 #'
 #' @param data [\code{data.frame}] \cr
 #'   Data to be analysed. Must contain all \code{var.cols}, \code{algo.col}
-#'   and \code{repl.col}. Should \code{var.cols} form a Pareto front for every
+#'   and \code{repl.col}. \code{var.cols} should form a Pareto front for every
 #'   combination of \code{repl.col} and \code{algo.col}.
 #' @param var.cols [\code{character(2)}] \cr
 #'   Names of columns with containing the values of the Pareto fronts.
@@ -66,6 +66,23 @@ mainTestProcedure = function(data, var.cols, algo.col, repl.col,
   eta = 0.5, w = c(0.05, 0.95), cp = 0.1, normalize = TRUE) {
   
   requirePackages(c("emoa", "combinat"))  
+  
+  assertDataFrame(data, types = c("numeric", "factor"), any.missing = FALSE)
+  assertChoice(var.cols, col.names(data))
+  assertChoice(algo.col, col.names(data))
+  assertChoice(repl.col, col.names(data))
+  assertChoice(indicator, c("hv", "r2", "epsilon"))
+  assertNumeric(ref.point, lower = 0L, len = 2L)
+  lambda = asCount(lambda)
+  assertNumber(eta, lower = 0, upper = 1)
+  assertNumeric(w, lower = 0, len = 2L)
+  w = w / sum(w)
+  assertNumber(cp, lower = 0L)
+  assertFlag(normalize)
+  
+  if (algo.col == repl.col || var.col %in% var.cols || repl.col %in% var.cols)
+    stop("algo.col, var.col and repl.col must be distinct.")
+  
   
   algos = factor(unique(data[, algo.col]))
   data.old = data

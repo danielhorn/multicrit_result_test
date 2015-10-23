@@ -68,9 +68,9 @@ mainTestProcedure = function(data, var.cols, algo.col, repl.col,
   requirePackages(c("emoa", "combinat"))  
   
   assertDataFrame(data, types = c("numeric", "factor"), any.missing = FALSE)
-  assertChoice(var.cols, col.names(data))
-  assertChoice(algo.col, col.names(data))
-  assertChoice(repl.col, col.names(data))
+  assertSubset(var.cols, colnames(data))
+  assertChoice(algo.col, colnames(data))
+  assertChoice(repl.col, colnames(data))
   assertChoice(indicator, c("hv", "r2", "epsilon"))
   assertNumeric(ref.point, lower = 0L, len = 2L)
   lambda = asCount(lambda)
@@ -80,7 +80,7 @@ mainTestProcedure = function(data, var.cols, algo.col, repl.col,
   assertNumber(cp, lower = 0L)
   assertFlag(normalize)
   
-  if (algo.col == repl.col || var.col %in% var.cols || repl.col %in% var.cols)
+  if (algo.col == repl.col || algo.col %in% var.cols || repl.col %in% var.cols)
     stop("algo.col, var.col and repl.col must be distinct.")
   
   
@@ -134,7 +134,7 @@ mainTestProcedure = function(data, var.cols, algo.col, repl.col,
   # Build result object
   # First a list with all input args
   args = list(
-    data = data,
+    data = data.old,
     var.cols = var.cols,
     algo.col = algo.col,
     repl.col = repl.col,

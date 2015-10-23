@@ -24,7 +24,6 @@ renderFrontTestResult = function(x, colors = NULL) {
   requirePackages(c("ggplot2", "eaf"))
   
   assertClass(x, "frontTestResult")
-  assertCharacter(colors, len = length(algos))
   
   # extract some stuff
   data = x$args$data
@@ -42,6 +41,10 @@ renderFrontTestResult = function(x, colors = NULL) {
   split.vals = x$split.vals
   
   # First: Fix colors for algos!
+  print(algos)
+  print(length(algos))
+  assertCharacter(colors, len = length(algos))
+  
   if (is.null(colors))
     colors = rainbow(length(algos))
   else

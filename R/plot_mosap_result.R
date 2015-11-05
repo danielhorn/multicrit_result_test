@@ -33,7 +33,7 @@ renderFrontTestResult = function(x, colors = NULL) {
   
   repls = length(unique((data[, repl.col])))
   
-  algos = unique(data[, algo.col])
+  algos = unique(sort(data[, algo.col]))
   non.dom.algos = names(which(x$non.dominated.algos))
   relevant.algos = names(which(x$relevant.algos))
   

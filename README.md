@@ -3,7 +3,7 @@
 
  Multi-objective selection of algorithm portfolios
 
-Travis CI: [![Build Status](https://travis-ci.org/berndbischl/mlrMBO.png?branch=master)](https://travis-ci.org/berndbischl/mlrMBO)
+Travis CI: [![Build Status](https://travis-ci.org/danielhorn/multicrit_result_test.png?branch=master)](https://travis-ci.org/danielhorn/multicrit_result_test)
 
 # Installation
 

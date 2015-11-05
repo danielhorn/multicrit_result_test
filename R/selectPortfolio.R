@@ -89,7 +89,7 @@ selectPortfolio = function(data, var.cols, algo.col, repl.col,
   indicator = "hv", ref.point = c(1.1, 1.1), lambda = 100,
   eta = 0.5, w = c(0.05, 0.95), cp = 0.1, normalize = TRUE) {
   
-  requirePackages(c("emoa", "combinat"))  
+  requirePackages(c("emoa"))  
   
   assertDataFrame(data, any.missing = FALSE)
   assertSubset(var.cols, colnames(data))

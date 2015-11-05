@@ -11,7 +11,7 @@
 
 relevantAlgosMulticritSelection = function(data, var.cols, algo.col, repl.col, contrFun, w) {
  
-  algos = as.character(unique(data[, algo.col]))
+  algos = as.character(sort(unique(data[, algo.col])))
   
   # first, we need the reference front. this is the median eaf of all algos and repls
   ref.front = eaf:::eafs(points = data[, var.cols],

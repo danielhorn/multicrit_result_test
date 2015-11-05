@@ -103,6 +103,6 @@ res = selectPortfolio(
   normalize = TRUE
 )
 print(res)
-plot(res, colors = c("violet", "turquoise", "green", "red", "black", "blue"))}
+plot(res, colors = c("turquoise", "green", "violet", "red", "black", "blue"))}
 }
 

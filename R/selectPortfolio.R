@@ -108,7 +108,7 @@ selectPortfolio = function(data, var.cols, algo.col, repl.col,
     stop("algo.col, var.col and repl.col must be distinct.")
   
   
-  algos = factor(unique(data[, algo.col]))
+  algos = factor(sort(unique(data[, algo.col])))
   data.old = data
   
   # Normalize Data

@@ -2,7 +2,7 @@
 #' the redner function does not print but return the ggplot-objects.
 #'
 #' @param x [\code{frontTestResult}]\cr
-#'   Result object from function \link{mainTestProcedure}.
+#'   Result object from function \link{selectPortfolio}.
 #' @param colors [\code{character}] \cr
 #'   Vector of colors for plotting. Length must be equal to number of algorithms.
 #' 
@@ -89,7 +89,7 @@ renderFrontTestResult = function(x, colors = NULL) {
 #' Plot-function for \code{frontTestResult}-objects. 
 #' 
 #' @param x [\code{frontTestResult}]\cr
-#'   Result object from function \link{mainTestProcedure}.
+#'   Result object from function \link{selectPortfolio}.
 #' @param make.pause [\code{logical(1)}]\cr
 #'   Should the process be paused after each iteration?
 #'   Default is \code{TRUE}.

@@ -8,7 +8,7 @@
 }
 \arguments{
 \item{x}{[\code{frontTestResult}]\cr
-Result object from function \link{mainTestProcedure}.}
+Result object from function \link{selectPortfolio}.}
 
 \item{make.pause}{[\code{logical(1)}]\cr
 Should the process be paused after each iteration?

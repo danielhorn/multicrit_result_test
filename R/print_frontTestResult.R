@@ -1,7 +1,7 @@
 #' print test result
 #' 
 #' @param x [\code{frontTestResult}]\cr
-#'   Result object from function \link{mainTestProcedure}.
+#'   Result object from function \link{selectPortfolio}.
 #' @param ... [\code{any}] \cr
 #'   Not used.
 #'   

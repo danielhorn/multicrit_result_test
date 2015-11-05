@@ -9,7 +9,7 @@ renderFrontTestResult(x, colors = NULL)
 }
 \arguments{
 \item{x}{[\code{frontTestResult}]\cr
-Result object from function \link{mainTestProcedure}.}
+Result object from function \link{selectPortfolio}.}
 
 \item{colors}{[\code{character}] \cr
   Vector of colors for plotting. Length must be equal to number of algorithms.}

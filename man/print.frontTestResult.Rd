@@ -8,7 +8,7 @@
 }
 \arguments{
 \item{x}{[\code{frontTestResult}]\cr
-Result object from function \link{mainTestProcedure}.}
+Result object from function \link{selectPortfolio}.}
 
 \item{...}{[\code{any}] \cr
   Not used.}

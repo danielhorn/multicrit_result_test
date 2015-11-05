@@ -1,5 +1,5 @@
 # intern R script for loading and preprocessing the data
-__makeDataFun = function() {
+zzz_makeDataFun = function() {
   
   library(emoa)
   path = "../../svm_large_data_publications_and_orga/results/expWithRepls/"

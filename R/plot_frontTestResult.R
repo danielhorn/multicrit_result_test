@@ -41,8 +41,6 @@ renderFrontTestResult = function(x, colors = NULL) {
   split.vals = x$split.vals
   
   # First: Fix colors for algos!
-  print(algos)
-  print(length(algos))
   assertCharacter(colors, len = length(algos))
   
   if (is.null(colors))

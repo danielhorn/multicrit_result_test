@@ -1,2 +1,2 @@
 library(testthat)
-test_check("PFPT")
+test_check("OMOAS")

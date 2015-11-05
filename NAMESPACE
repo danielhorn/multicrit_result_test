@@ -2,8 +2,8 @@
 
 S3method(plot,frontTestResult)
 S3method(print,frontTestResult)
-export(mainTestProcedure)
 export(renderFrontTestResult)
+export(selectPortfolio)
 import(BBmisc)
 import(checkmate)
 import(eaf)

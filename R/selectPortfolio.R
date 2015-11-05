@@ -1,4 +1,6 @@
-#' Main Test Procedure
+#' selectPortfolio
+#'
+#' Method used to start the multi-objective algorithm portfolio selection
 #'
 #' @param data [\code{data.frame}] \cr
 #'   Data to be analysed. Must contain all \code{var.cols}, \code{algo.col}
@@ -58,16 +60,38 @@
 #'     in best.algo.order.}
 #'   \item{args [\code{list}] List containing all input arguments}
 #' }
+#' @examples 
+#' \dontrun{
+#' # Load data - for the data with subsampling enabled use apprSubsampleSVMParetoFronts
+#' data(apprSVMParetoFronts)
 #' 
+#' # Avaible datasets: codrna, mnist, protein, vehicle
+#' data = subset(apprSVMParetoFronts, apprSVMParetoFronts$dataset == "mnist")
+#' 
+#' # Start the front analysis with the main procedure
+#' res = selectPortfolio(
+#'   data = data,
+#'   var.cols = c("error", "execTime"),
+#'   algo.col = "solver",
+#'   repl.col = "repl",
+#'   indicator = "hv",
+#'   ref.point = c(1.1, 1.1),
+#'   eta = 0.5,
+#'   w = c(0.05, 0.95),
+#'   cp = 0.01,
+#'   normalize = TRUE
+#' ) 
+#' print(res)
+#' plot(res, colors = c("violet", "turquoise", "green", "red", "black", "blue"))}
 #' @export
 
-mainTestProcedure = function(data, var.cols, algo.col, repl.col,
+selectPortfolio = function(data, var.cols, algo.col, repl.col,
   indicator = "hv", ref.point = c(1.1, 1.1), lambda = 100,
   eta = 0.5, w = c(0.05, 0.95), cp = 0.1, normalize = TRUE) {
   
   requirePackages(c("emoa", "combinat"))  
   
-  assertDataFrame(data, types = c("numeric", "factor"), any.missing = FALSE)
+  assertDataFrame(data, any.missing = FALSE)
   assertSubset(var.cols, colnames(data))
   assertChoice(algo.col, colnames(data))
   assertChoice(repl.col, colnames(data))

@@ -40,9 +40,6 @@ renderFrontTestResult = function(x, colors = NULL) {
   best.algo.order = x$best.algo.order
   split.vals = x$split.vals
   
-  # First: Fix colors for algos!
-  assertCharacter(colors, len = length(algos))
-  
   if (is.null(colors))
     colors = rainbow(length(algos))
   else

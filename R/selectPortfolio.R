@@ -180,7 +180,7 @@ selectPortfolio = function(data, var.cols, algo.col, repl.col,
     split.vals = perms$split.vals,
     args = args
   )
-  res = addClasses(res, "frontTestResult")
+  res = addClasses(res, "mosap_result")
   
   return(res)
 }

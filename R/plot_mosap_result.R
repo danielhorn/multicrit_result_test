@@ -1,7 +1,7 @@
 #' Render plots for a frontTestResult Object. In contrary to the plot-function
 #' the redner function does not print but return the ggplot-objects.
 #'
-#' @param x [\code{frontTestResult}]\cr
+#' @param x [\code{mosap_result}]\cr
 #'   Result object from function \link{selectPortfolio}.
 #' @param colors [\code{character}] \cr
 #'   Vector of colors for plotting. Length must be equal to number of algorithms.
@@ -23,7 +23,7 @@
 renderFrontTestResult = function(x, colors = NULL) {
   requirePackages(c("ggplot2", "eaf"))
   
-  assertClass(x, "frontTestResult")
+  assertClass(x, "mosap_result")
   
   # extract some stuff
   data = x$args$data
@@ -88,7 +88,7 @@ renderFrontTestResult = function(x, colors = NULL) {
 
 #' Plot-function for \code{frontTestResult}-objects. 
 #' 
-#' @param x [\code{frontTestResult}]\cr
+#' @param x [\code{mosap_result}]\cr
 #'   Result object from function \link{selectPortfolio}.
 #' @param make.pause [\code{logical(1)}]\cr
 #'   Should the process be paused after each iteration?
@@ -99,7 +99,7 @@ renderFrontTestResult = function(x, colors = NULL) {
 #'   
 #' @export
 
-plot.frontTestResult = function(x, make.pause = TRUE, ...) {
+plot.mosap_result = function(x, make.pause = TRUE, ...) {
   requirePackages(c("ggplot2", "eaf"))
   
   assertFlag(make.pause)

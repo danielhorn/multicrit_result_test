@@ -1,0 +1,14 @@
+selection graphik nicht nur mediane
+
+- Selection nur ueber Dominanz - nur Algorithmen, die in mehr als der Haelfte der Runs einen Beitrag liefern
+- Nicht mehr Median ueber Indikator, sondern Indikator ueber Mediane EAF
+- Auf EAF Ebene Testen (Fonseca)
+(- Tests auf Ebene der Indikator-Wiederholungen)
+- Indikator auf allen Kombinationen Algos, ParetoFront
+  Anzahl Algos gegen Indikator / magischer Gewichtsvektor
+
+
+- Modell Paretofronten
+- 10 Runs versus 1 Noisy Run
+
+Anwendung BBOB

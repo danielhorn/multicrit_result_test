@@ -1,22 +1,25 @@
 Package: MOSAP
 Title: Multi-objective selection of algorithm portfolios
 Description: Method for analysing data from offline multi-objective algorithm
-  portfolio selection.
+    portfolio selection.
 Authors@R: person("Daniel", "Horn", email = "daniel.horn@tu-dortmund.de", role = c("aut", "cre"))
 URL: https://github.com/danielhorn/multicrit_result_test
 BugReports: https://github.com/danielhorn/multicrit_result_test/issues
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
 Roxygen: list(wrap = FALSE)
-Imports: 
+Imports:
     checkmate,
     BBmisc,
     ggplot2,
     emoa,
     eaf,
-    rpart
-Suggests: 
+    rpart,
+    mco,
+    LambertW
+Suggests:
     testthat
 LazyData: yes
 ByteCompile: yes
 Version: 0.1
+RoxygenNote: 5.0.1

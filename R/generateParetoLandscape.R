@@ -1,9 +1,3 @@
-#library(checkmate)
-library(BBmisc)
-
-source("MOSAP/experiments/generateSingleParetoFront.R")
-source("MOSAP/experiments/helpers.R")
-
 # Echte Parameter:
 # N: Anzahl Fronten auf der gemeinsamen Front 
 # M: Anzahl Fronten ausserhalb der gemeinsamen Front ("Stoerfronten")

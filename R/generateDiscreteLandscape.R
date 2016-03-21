@@ -1,7 +1,3 @@
-library(mco)
-source("MOSAP/experiments/generateApprFrontWeighted.R")
-source("MOSAP/experiments/generateApprFrontNSGA2.R")
-
 ## 4 Funktionen, um eine diskrete Approximation einer Pareto Landschaft
 ## zu erzeugen. Eingabe ist jeweils eine Pareto-Landschaft und die Anzahl
 ## Punkte, die pro Front erzeugt werden soll

@@ -1,6 +1,3 @@
-source("MOSAP/experiments/generateParetoLandscape.R")
-
-
 # HelferFunktion: Erzeuge Punkte auf der Pareto-Front zu einem gegebenem
 # Gewichtsvektor, so dass jeweils gilt: w * f1 = (1 - w) * f2, wobei
 # f1 und f2 die beiden objectives sind

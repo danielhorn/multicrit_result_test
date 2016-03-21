@@ -28,17 +28,14 @@ generatePointsNSGA2 = function(landscape, k, use.g, idim, generations) {
     }
     
     xmax = 1
-    ymin = fun(xmax)
-    ymax = 1
-    
     fun.tmp = function(x) {
-      fun(x * (xmax - xmin) + xmin) #- ymin) / (ymax - ymin)
+      fun(x * (xmax - xmin) + xmin)
     }
     
     zdt = generateZDT1Function(fun.tmp, use.g)
-    opt = nsga2(zdt, idim = idim, odim = 2L, lower.bounds = rep(0, 10), 
+    opt = mco::nsga2(zdt, idim = idim, odim = 2L, lower.bounds = rep(0, 10), 
       upper.bounds = rep(1, 10), popsize = k, generations = generations)
-    points = paretoFront(opt)
+    points = mco::paretoFront(opt)
     points = data.frame(x = points[, 1], y = points[, 2])
     
     points$x = points$x * (xmax - xmin) + xmin

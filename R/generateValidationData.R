@@ -15,6 +15,10 @@
 #'  Determines whether noise is added to the parameters of the functions that form
 #'  the fronts (\code{parambased}) or to the points (\code{pointbased}) to get 
 #'  replications of the discrete approximation. 
+#' @param number.of.points [\code{integer}] \cr
+#'  Number of points that is generated for every algorithm.
+#' @param replications [\code{integer}] \cr
+#'  Number of replications of the discrete aproximation.
 #' 
 #' @return [\code{list}]
 #'  List that contains information about the true (original) pareto landscape 
@@ -24,7 +28,8 @@
 #' @export
 
 generateValidationData = function(N, M, split.points.type = "uniform", 
-  type = "deterministic", randomness = "parambased") {
+  type = "deterministic", randomness = "parambased", number.of.points = 20L, 
+  replications = 10L) {
   if (split.points.type == "uniform") {
     split.points = switch(N, NULL, 0.5, c(0.33, 0.66), NULL, c(0.2, 0.4, 0.6, 0.8))
   }
@@ -35,7 +40,7 @@ generateValidationData = function(N, M, split.points.type = "uniform",
   landscape = generateParetoLandscape(N = N, M = M, split.points = split.points)
   
   landscape.list = list()
-  for (i in 1:10) {
+  for (i in 1:replications) {
     landscape.list[[i]] = makeNoisy(landscape)
   }
   
@@ -47,12 +52,12 @@ generateValidationData = function(N, M, split.points.type = "uniform",
   
   if (randomness == "parambased") {
     tmp = lapply(seq_along(landscape.list), function(i)
-      cbind(generateDiscreteParetoLandscape(landscape.list[[i]], 20L), i))
+      cbind(generateDiscreteParetoLandscape(landscape.list[[i]], number.of.points), i))
     X = do.call(rbind, tmp)
   }
   
   if (randomness == "pointbased") {
-    disc.ls = generateDiscreteParetoLandscape(landscape, 20L)
+    disc.ls = generateDiscreteParetoLandscape(landscape, number.of.points)
     tmp = lapply(seq_along(landscape.list), function(i) {
       randi = matrix(abs(rnorm(2 * nrow(disc.ls), 0, 0.02)), ncol = 2)
       cbind(disc.ls[, 1], disc.ls[, 2:3] + randi, i)

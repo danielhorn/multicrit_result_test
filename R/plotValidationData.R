@@ -1,6 +1,7 @@
 # val.data: result of generateValidationData
 #' @export
-plotValidationData = function(val.data, repl = 1L, grey = FALSE) {
+plotValidationData = function(val.data, repl = 1L, grey = FALSE, return.plot = FALSE, 
+  title = "") {
   n = length(val.data$landscape$f.list)
 
   dat = val.data$validationData[val.data$validationData$repl == repl, ]
@@ -11,6 +12,7 @@ plotValidationData = function(val.data, repl = 1L, grey = FALSE) {
   pl = pl + geom_point(mapping = aes(x = x, y = y, colour = algorithm, shape = algorithm), size = 2)
   pl = pl + scale_shape_manual("algorithm", values = c(16, 17, 15, 18, 3, 4, 7, 8, 9, 12))
   pl = pl + guides(colour = guide_legend("algorithm", override.aes = list(size = 2, linetype = 0)))
+  pl = pl + ggtitle(title)
   
   for (i in 1:n) {
     if (grey) {
@@ -28,5 +30,10 @@ plotValidationData = function(val.data, repl = 1L, grey = FALSE) {
     pl = pl + scale_color_manual(values = rep("black", length(val.data$landscape$f.list)))
   }
   
-  print(pl)
+  
+  if (return.plot) {
+    return(pl)
+  } else {
+    print(pl)
+  }
 }

@@ -1,7 +1,7 @@
 # val.data: result of generateValidationData
 #' @export
 plotValidationData = function(val.data, repl = 1L, grey = FALSE, return.plot = FALSE, 
-  title = "") {
+  title = "", legend = TRUE) {
   n = length(val.data$landscape$f.list)
 
   dat = val.data$validationData[val.data$validationData$repl == repl, ]
@@ -10,10 +10,12 @@ plotValidationData = function(val.data, repl = 1L, grey = FALSE, return.plot = F
   pl = ggplot(data = dat)
   pl = pl + ylim(0, 1) + xlim(0, 1)
   pl = pl + geom_point(mapping = aes(x = x, y = y, colour = algorithm, shape = algorithm), size = 2)
-  pl = pl + scale_shape_manual("algorithm", values = c(16, 17, 15, 18, 3, 4, 7, 8, 9, 12))
+  pl = pl + scale_shape_manual("algorithm", values = c(16, 17, 15, 18, 3, 4, 7, 8, 9, 12), guide = legend)
+  if (legend) {
   pl = pl + guides(colour = guide_legend("algorithm", override.aes = list(size = 2, linetype = 0)))
+  }
   pl = pl + ggtitle(title)
-  
+
   for (i in 1:n) {
     if (grey) {
       pl = pl + stat_function(aes(x), data = data.frame(x = c(0, 1)), 
@@ -27,9 +29,8 @@ plotValidationData = function(val.data, repl = 1L, grey = FALSE, return.plot = F
   }
   
   if (grey) {
-    pl = pl + scale_color_manual(values = rep("black", length(val.data$landscape$f.list)))
+    pl = pl + scale_color_manual(values = rep("black", length(val.data$landscape$f.list)), guide = legend)
   }
-  
   
   if (return.plot) {
     return(pl)

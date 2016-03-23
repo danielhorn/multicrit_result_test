@@ -10,9 +10,12 @@ plotValidationData = function(val.data, repl = 1L, grey = FALSE, return.plot = F
   pl = ggplot(data = dat)
   pl = pl + ylim(0, 1) + xlim(0, 1)
   pl = pl + geom_point(mapping = aes(x = x, y = y, colour = algorithm, shape = algorithm), size = 2)
-  pl = pl + scale_shape_manual("algorithm", values = c(16, 17, 15, 18, 3, 4, 7, 8, 9, 12), guide = legend)
+  
   if (legend) {
+  pl = pl + scale_shape_manual("algorithm", values = c(16, 17, 15, 18, 3, 4, 7, 8, 9, 12))
   pl = pl + guides(colour = guide_legend("algorithm", override.aes = list(size = 2, linetype = 0)))
+  } else {
+    pl = pl + scale_shape_manual("algorithm", values = c(16, 17, 15, 18, 3, 4, 7, 8, 9, 12), guide = FALSE)
   }
   pl = pl + ggtitle(title)
 

@@ -33,6 +33,7 @@ plotValidationData = function(val.data, repl = 1L, grey = FALSE, return.plot = F
   
   if (grey) {
     pl = pl + scale_color_manual(values = rep("black", length(val.data$landscape$f.list)), guide = legend)
+    pl = pl + theme_bw()
   }
   
   if (return.plot) {

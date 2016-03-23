@@ -1,4 +1,5 @@
 # val.data: result of generateValidationData
+#' @export
 plotValidationData = function(val.data, repl = 1L, grey = FALSE) {
   n = length(val.data$landscape$f.list)
 
@@ -12,15 +13,20 @@ plotValidationData = function(val.data, repl = 1L, grey = FALSE) {
   pl = pl + guides(colour = guide_legend("algorithm", override.aes = list(size = 2, linetype = 0)))
   
   for (i in 1:n) {
-    pl = pl + stat_function(aes(x, colour = algorithm), 
-      data = data.frame(x = c(0, 1), algorithm = algo.names[i]), 
-      fun = val.data$landscape$f.list[[i]], size = 1)
+    if (grey) {
+      pl = pl + stat_function(aes(x), data = data.frame(x = c(0, 1)), 
+        fun = val.data$landscape$f.list[[i]], size = 1, alpha = 0.5)
+      
+    } else {
+      pl = pl + stat_function(aes(x, colour = algorithm), 
+        data = data.frame(x = c(0, 1), algorithm = algo.names[i]), 
+        fun = val.data$landscape$f.list[[i]], size = 1)
+    }
   }
   
   if (grey) {
-    pl = pl + scale_color_grey()
+    pl = pl + scale_color_manual(values = rep("black", length(val.data$landscape$f.list)))
   }
   
   print(pl)
 }
-

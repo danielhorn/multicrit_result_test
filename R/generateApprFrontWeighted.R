@@ -30,12 +30,26 @@ generateApprFrontWeighted = function(fun, pars, w) {
   ymax = 1
   
   x.vals = numeric(length(w))
+  y.vals = numeric(length(w))
   for (i in 1:length(w)) {
-  minimi = function(x) (w[i] * (x - xmin) / (xmax - xmin) -
-      (1 - w[i]) * (fun(x) - ymin) / (ymax - ymin)) ^ 2
-  x.vals[i] = optimize(minimi, c(0, 1))$minimum
+    if (w[i] != 1 && w[i] != 0) {  
+      minimi = function(x) (w[i] * (x - xmin) / (xmax - xmin) -
+          (1 - w[i]) * (fun(x) - ymin) / (ymax - ymin)) ^ 2
+      x.vals[i] = optimize(minimi, c(0, 1))$minimum
+      y.vals[i] = fun(x.vals[i])
+    }
+    # Sonderfaelle, falls w = 1 oder w = 0:
+    if (w[i] == 1) {
+      x.vals[i] = xmin
+      y.vals[i] = ymax
+    }
+    if (w[i] == 0) {
+      x.vals[i] = xmax
+      y.vals[i] = ymin
+    }
+    
   }
-  y.vals = fun(x.vals)
+#  y.vals = fun(x.vals)
   
   return(data.frame(x = x.vals, y = y.vals))
 }

@@ -7,16 +7,16 @@ generateDiscreteParetoLandscapeDeterministic = function(landscape, k) {
   return(generatePointsWeighted(landscape, w))
 }
 
-generateDiscreteParetoLandscapeUniform = function(landscape, k) {
+generateDiscreteParetoLandscapeRandom = function(landscape, k) {
   w = runif(k, 0, 1)
   return(generatePointsWeighted(landscape, w))
 }
 
-generateDiscreteParetoLandscapeNSGA2 = function(landscape, k, idim = 2L, generations = 20L) {
+generateDiscreteParetoLandscapeNSGAII = function(landscape, k, idim = 2L, generations = 20L) {
   generatePointsNSGA2(landscape, k, use.g = FALSE, idim = idim, generations = generations)
 }
 
-generateDiscreteParetoLandscapeNSGA2_g = function(landscape, k, idim = 2L, generations = 20L) {
+generateDiscreteParetoLandscapeNSGAII_g = function(landscape, k, idim = 2L, generations = 20L) {
   generatePointsNSGA2(landscape, k, use.g = TRUE,  idim = idim, generations = generations)
 }
 

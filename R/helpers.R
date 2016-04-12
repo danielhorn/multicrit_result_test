@@ -4,9 +4,10 @@
 # Achtung: c und d wird fest auf 0 gesetzt, e auf 1, und das Vorzeichen von b wird
 # getrennt gesampelt
 
-sampleParetoFrontParams = function(a.lim = c(10, 25), b.lim = c(0.05, 2), sign.b = NULL) {
+sampleParetoFrontParams = function(a.lim = c(-1, 6), b.lim = c(0, 5), sign.b = NULL) {
   
-  a = runif(n = 1, min = a.lim[1], max = a.lim[2])
+  x = runif(n = 1, min = a.lim[1], max = a.lim[2])
+  a = 2 ^ x
   if (is.null(sign.b)) {
     sign.b = sample(c(-1, 1), 1)
   }
@@ -51,15 +52,15 @@ intersectWithCommonFront = function(f.par, f.list, split.points, y.split.point,
 }
 
 ## Gets a paretoLandscape and adds a bit noise to every param
-makeNoisy = function(funs) {
+makeNoisy = function(funs, sd = list(a = 0.03, b = 0.004, c = 0.02, d = 0.02)) {
   addNoise = function(fun) {
     params = as.list(environment(fun))
     fun2 = fun
     environment(fun2) = new.env()
-    environment(fun2)$a = params$a + rnorm(1, 0, 0.03)
-    environment(fun2)$b = params$b + rnorm(1, 0, 0.004)
-    environment(fun2)$c = params$c + rnorm(1, 0, 0.02)
-    environment(fun2)$d = params$d + rnorm(1, 0, 0.02)
+    environment(fun2)$a = params$a + rnorm(1, 0, sd$a)
+    environment(fun2)$b = params$b + rnorm(1, 0, sd$b)
+    environment(fun2)$c = params$c + rnorm(1, 0, sd$c)
+    environment(fun2)$d = params$d + rnorm(1, 0, sd$d)
     environment(fun2)$e = params$e
     environment(fun2)$g = params$g
     fun2

@@ -8,7 +8,7 @@ plotValidationData = function(val.data, repl = 1L, grey = FALSE, return.plot = F
   algo.names = val.data$landscape$algos
 
   pl = ggplot(data = dat)
-  pl = pl + ylim(0, 1) + xlim(0, 1)
+  pl = pl + ylim(min(dat$x), max(dat$y)) + xlim(min(dat$x), max(dat$x))
   pl = pl + geom_point(mapping = aes(x = x, y = y, colour = algorithm, shape = algorithm), size = 2)
   
   if (legend) {

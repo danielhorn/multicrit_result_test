@@ -3,7 +3,7 @@
 
 ## landscape: Ergebnis von generateParetoLandscape
 ## portfolio: Ergebnis von MOSAP::selectPortfolio
-
+#'@export
 compareCommonParetoFronts = function(landscape, portfolio) {
   N = length(landscape$split.points) - 1
   n = length(portfolio$best.algo.order)

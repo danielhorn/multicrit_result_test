@@ -4,7 +4,9 @@
 \alias{generateValidationData}
 \title{Generates validation data for the algorithm portfolio selection.}
 \usage{
-generateValidationData(N, M, split.points.type, type, randomness)
+generateValidationData(N, M, split.type = "uniform",
+  discretize.type = "deterministic", replications.type = "parameter-noise",
+  k = 20L, replications = 10L)
 }
 \arguments{
 \item{N}{[\code{integer}] \cr
@@ -13,25 +15,32 @@ Number of algorithms on the common pareto front.}
 \item{M}{[\code{integer}] \cr
 Number of additional algorithms that are not on the commo pareto front.}
 
-\item{split.points.type}{[\code{character}] \cr
-Determines whether the split.points between the algorithms are chosen in  a 
-\code{uniform} or \code{nonuniform} way.}
+\item{split.type}{[\code{character}] \cr
+Determines whether the split points between the algorithms are chosen in  a 
+\code{uniform} or \code{non-uniform} way.}
 
-\item{type}{[\code{character}] \cr
+\item{discretize.type}{[\code{character}] \cr
 Determines how the discrete approximation of the pareto front is done.
-The values \code{deterministic}, \code{uniform}, \code{NSGA2} and \code{NSGA2_g}
+The values \code{deterministic}, \code{random}, \code{NSGA-II} and \code{NSGA-II_g}
 are possible.}
 
-\item{randomness}{[\code{character}] \cr
+\item{replications.type}{[\code{character}] \cr
 Determines whether noise is added to the parameters of the functions that form
-the fronts (\code{parambased}) or to the points (\code{pointbased}) to get 
-replications of the discrete approximation.}
+the fronts (\code{parameter-noise}) or to the points (\code{point-noise}) to get 
+replications of the discrete approximation. It is also possible to add no
+noise (\code{replications.type = without-noise}).}
+
+\item{k}{[\code{integer}] \cr
+Number of points that is generated for every algorithm.}
+
+\item{replications}{[\code{integer}] \cr
+Number of replications of the discrete approximation.}
 }
 \value{
 [\code{list}]
- List that contains information about the true (original) pareto landscape 
- (functions that form the pareto fronts, true splitpoints, names of the algorithms)
- and the validation data.
+ List that contains the true (original) pareto landscape 
+ (functions that form the pareto fronts, true splitpoints, ...), the names
+ of the algorithms and the validation data.
 }
 \description{
 Generates validation data for the algorithm portfolio selection.

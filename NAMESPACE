@@ -2,6 +2,7 @@
 
 S3method(plot,mosap_result)
 S3method(print,mosap_result)
+export(compareCommonParetoFronts)
 export(generateValidationData)
 export(plotValidationData)
 export(renderFrontTestResult)

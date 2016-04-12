@@ -4,7 +4,7 @@
 # Achtung: c und d wird fest auf 0 gesetzt, e auf 1, und das Vorzeichen von b wird
 # getrennt gesampelt
 
-sampleParetoFrontParams = function(a.lim = c(-1, 6), b.lim = c(0, 5), sign.b = NULL) {
+sampleParetoFrontParams = function(a.lim = c(-1, 5), b.lim = c(0.05, 5), sign.b = NULL) {
   
   x = runif(n = 1, min = a.lim[1], max = a.lim[2])
   a = 2 ^ x

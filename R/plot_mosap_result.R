@@ -35,7 +35,6 @@ renderFrontTestResult = function(x, colors = NULL) {
   
   algos = unique(sort(data[, algo.col]))
   non.dom.algos = names(which(x$non.dominated.algos))
-  relevant.algos = names(which(x$relevant.algos))
   
   best.algo.order = x$best.algo.order
   split.vals = x$split.vals
@@ -63,13 +62,17 @@ renderFrontTestResult = function(x, colors = NULL) {
   plots[[4L]] = plotEAF(data, var.cols, algo.col, repl.col, colors.non.dom.algos)
 
   # 4th Plot: Multicrit Selection of relevant algos
-  plots[[5L]] = plotMulticritSelection(data = x$algos.selection.vals, 
-    colors = colors.non.dom.algos, w = x$args$w)
+  if (!is.null(x$algos.selection.vals))
+    plots[[5L]] = plotMulticritSelection(data = x$algos.selection.vals, 
+      colors = colors.non.dom.algos, w = x$args$w)
 
   # 5th Plot: EAF off all remaining algos
-  colors.relevant.algos = colors[algos %in% relevant.algos]
-  data = subset(data, data[, algo.col] %in% relevant.algos)
-  plots[[6L]] = plotEAF(data, var.cols, algo.col, repl.col, colors.relevant.algos)
+  if (!is.null(x$relevant.algos)) {
+    relevant.algos = names(which(x$relevant.algos))
+    colors.relevant.algos = colors[algos %in% relevant.algos]
+    data = subset(data, data[, algo.col] %in% relevant.algos)
+    plots[[6L]] = plotEAF(data, var.cols, algo.col, repl.col, colors.relevant.algos)
+  }
 
   ## 6th Plot: Show permutation.
   colors.best.order = colors[algos %in% best.algo.order]
@@ -108,8 +111,11 @@ plot.mosap_result = function(x, make.pause = TRUE, ...) {
   
   nof.plots = length(plots)
   for (i in 1:nof.plots) {
-    print(plots[[i]])
-    if (i != nof.plots) checkPause()
+    if (!is.null(plots[[i]])) {
+      print(plots[[i]])
+      if (i != nof.plots) checkPause()
+    }
+
   }
 
   return(invisible(NULL))

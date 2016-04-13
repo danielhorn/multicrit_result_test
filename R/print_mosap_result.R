@@ -12,7 +12,7 @@ print.mosap_result = function(x, ...) {
   var.cols = x$args$var.col
   repl.col = x$args$repl.col
   
-  catf("Welcome to package PFPT main test procedure.\n")
+  catf("Welcome to package MOSAP main procedure.\n")
   catf("Let's have a look the parameters you specified:")
   catf("Indicator: %s", x$args$indicator)
   cat("\n")
@@ -32,12 +32,18 @@ with respect to your algorithm variable %s and your replication variable %s.\n",
   print(names(which(x$non.dominated.algos)))
   catf("\n")
   
-  catf("The best trade-off between contribution to the common front and
-number of algorithms is made by these %i algorithms:", sum(x$relevant.algos))
-  print(names(which(x$relevant.algos)))
-  catf("\n")
-  
-  catf("Favored order of algorithms, printed with low values of %s first:",
-    var.cols[1L])
-  catf("[1] %s", collapse(as.character(x$best.algo.order), sep = " - "))
+  if (length(x$non.dominated.algos == 1L)) {
+
+    catf("Found only 1 non-dominated algorithm. It covers the complete joint front.")
+    
+  } else {
+    catf("The best trade-off between contribution to the common front and
+      number of algorithms is made by these %i algorithms:", sum(x$relevant.algos))
+    print(names(which(x$relevant.algos)))
+    catf("\n")
+    
+    catf("Favored order of algorithms, printed with low values of %s first:",
+      var.cols[1L])
+    catf("[1] %s", collapse(as.character(x$best.algo.order), sep = " - "))
+  }
 }

@@ -107,9 +107,23 @@ selectPortfolio = function(data, var.cols, algo.col, repl.col,
   if (algo.col == repl.col || algo.col %in% var.cols || repl.col %in% var.cols)
     stop("algo.col, var.col and repl.col must be distinct.")
   
+  # Initialize a list with all input args for the result object
+  args = list(
+    data = data,
+    var.cols = var.cols,
+    algo.col = algo.col,
+    repl.col = repl.col,
+    indicator = indicator,
+    ref.point = ref.point,
+    lambda = lambda,
+    eta = eta,
+    w = w,
+    cp = cp,
+    normalize = normalize
+  )
+  
   
   algos = factor(sort(unique(data[, algo.col])))
-  data.old = data
   
   # Normalize Data
   if (normalize)
@@ -134,6 +148,23 @@ selectPortfolio = function(data, var.cols, algo.col, repl.col,
   data = subset(data, data[, algo.col] %in% algos)
   data[, algo.col] = factor(data[, algo.col], levels = algos)
   
+  # If only 1 algorithms remains, stop here. This algorithm dominates the complete
+  # front
+  
+  if (length(algos) == 1) {
+    res = list(
+      non.dominated.algos = non.dom.algos$relevant.algos,
+      algos.domination.count = non.dom.algos$counts,
+      relevant.algos = NULL,
+      algos.selection.vals = NULL,
+      best.algo.order = algos,
+      split.vals = c(),
+      args = args
+    )
+    res = addClasses(res, "mosap_result")
+    return(res)
+  }
+  
   # Second Selection: Multicrit Selection
   selected.algos = 
     relevantAlgosMulticritSelection(data, var.cols, algo.col, repl.col, contrFun, w)
@@ -156,21 +187,6 @@ selectPortfolio = function(data, var.cols, algo.col, repl.col,
   }
 
   # Build result object
-  # First a list with all input args
-  args = list(
-    data = data.old,
-    var.cols = var.cols,
-    algo.col = algo.col,
-    repl.col = repl.col,
-    indicator = indicator,
-    ref.point = ref.point,
-    lambda = lambda,
-    eta = eta,
-    w = w,
-    cp = cp,
-    normalize = normalize
-  )
-  
   res = list(
     non.dominated.algos = non.dom.algos$relevant.algos,
     algos.domination.count = non.dom.algos$counts,

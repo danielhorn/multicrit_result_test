@@ -34,3 +34,24 @@
 #'   \item{execTime}{second performance measure - the training time}
 #' }
 "apprSubsampleSVMParetoFronts"
+
+#' 
+#' Validation of the method \link{selectPortfolio} using artificial
+#' data from \link{generateValidationData}.
+#' 
+#' Details of the experiment are given in the paper Multi-Objective Selection of
+#' AlgorithmPortfolios: Experimental Validation, submitted to the PPSN2016.
+#'
+#' @format A data frame with 86400 rows and 10 variables:
+#' \describe{
+#'   \item{id}{Integer. Running experiment id.}
+#'   \item{N}{Integer. Number of active fronts}
+#'   \item{split.type}{Factor. Uniform or non-unifrom split points between the active fronts?}
+#'   \item{M}{Integer. Number of interference fronts.}
+#'   \item{k}{Integer. Size of the discrete approximations.}
+#'   \item{discretize.type}{Factor. Which of the 4 discretize methods was used?}
+#'   \item{replications.type}{Factor. Which of the 3 replication methods was used?}
+#'   \item{repl}{Integer. Differentiates the 100 replications per setting.}
+#'   \item{z-value}{The resulting z-value of the experiment}
+#' }
+"validateMOSAPData"

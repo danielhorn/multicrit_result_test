@@ -7,11 +7,9 @@
 compareCommonParetoFronts(landscape, portfolio)
 }
 \arguments{
-\item{landscape}{\cr
-Result of \code{generateParetoLandscape}.}
+\item{landscape}{Result of \code{generateParetoLandscape}.}
 
-\item{portfolio}{\cr
-Result of \code{MOSAP::selectPortfolio}.}
+\item{portfolio}{Result of \code{MOSAP::selectPortfolio}.}
 }
 \value{
 [\code{numeric}]

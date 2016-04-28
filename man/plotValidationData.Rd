@@ -8,8 +8,7 @@ plotValidationData(val.data, repl = 1L, grey = FALSE, return.plot = FALSE,
   title = "", legend = TRUE)
 }
 \arguments{
-\item{val.data}{\cr
-Result of \code{generateValidationData}.}
+\item{val.data}{Result of \code{generateValidationData}.}
 
 \item{repl}{[\code{integer}] \cr
 Which replication should be plotted? Default is the first replication.}

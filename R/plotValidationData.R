@@ -1,4 +1,19 @@
-# val.data: result of generateValidationData
+#' Plots validation data for the algorithm portfolio selection.
+#'
+#' @param val.data 
+#'   Result of \code{generateValidationData}.
+#' @param repl [\code{integer}] \cr
+#'   Which replication should be plotted? Default is the first replication.
+#' @param grey [\code{logical}] \cr
+#'   Should the plot be in grey shades? Default is \code{FALSE}.
+#' @param return.plot [\code{logical}] \cr
+#'   Should the plot be returned by the function (or just plotted)? Default
+#'   is \code{FALSE}.
+#' @param title [\code{character}] \cr
+#'   Title for the plot. Default is no title.
+#' @param legend [\code{logical}] \cr
+#'   Should a legend be plotted? Default is \code{TRUE}.
+
 #' @export
 plotValidationData = function(val.data, repl = 1L, grey = FALSE, return.plot = FALSE, 
   title = "", legend = TRUE) {

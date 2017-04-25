@@ -18,7 +18,7 @@ relevantAlgosDominationSelection = function(data, var.cols, algo.col, repl.col, 
   
   counts = table(unlist(non.dom.algos))
   
-  relevant.algos = counts > length(data.splitted) * eta
+  relevant.algos = counts >= length(data.splitted) * eta
   
   list(relevant.algos = relevant.algos, counts = counts)
 }

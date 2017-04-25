@@ -28,6 +28,7 @@ sortedParetoFrontClassification = function(data, var.cols, algo.col, repl.col, c
   
   # Use the EAF points to learn the rpart
   # So, first, calculate them, exclude percentile coloumn
+  # FIXME magic number
   eaf.front = eaf:::eafs(points = data[, var.cols], sets = data[, repl.col],
     groups = data[, algo.col], percentiles = 50)[, -(length(var.cols) + 1)]
   
@@ -43,6 +44,7 @@ sortedParetoFrontClassification = function(data, var.cols, algo.col, repl.col, c
     )
   
   # exclude one variable
+  # FIXME erlaube mehr abblidungen, nicht nur auf die eine var.id
   eaf.front = eaf.front[, -max(var.ids)]
   # now use rpart to get order of algorithms
   mod = rpart::rpart(groups ~ ., data = eaf.front, weights = weights, minsplit = 1)

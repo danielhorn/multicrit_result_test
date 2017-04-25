@@ -139,18 +139,18 @@ selectPortfolio = function(data, var.cols, algo.col, repl.col,
       r2_indicator(t(points), t(o), lambda = lambda)
   )
   
-  # First selection: Remove all algorithms that are dominated in at least 50% repls
+  # First selection: Remove all algorithms that are dominated in at least eta% repls
   non.dom.algos = 
     relevantAlgosDominationSelection(data, var.cols, algo.col, repl.col, eta)
   
   # Now drop non-selected algos and set new factor levels
+  # FIXME: dropAlgorithms schreiben
   algos = factor(algos[non.dom.algos$relevant.algos])
   data = subset(data, data[, algo.col] %in% algos)
   data[, algo.col] = factor(data[, algo.col], levels = algos)
   
   # If only 1 algorithms remains, stop here. This algorithm dominates the complete
   # front
-  
   if (length(algos) == 1) {
     res = list(
       non.dominated.algos = non.dom.algos$relevant.algos,
@@ -170,14 +170,12 @@ selectPortfolio = function(data, var.cols, algo.col, repl.col,
     relevantAlgosMulticritSelection(data, var.cols, algo.col, repl.col, contrFun, w)
   
   # Now drop non selected algos and set new factor levels
+  # FIXME: funktion dropAlgorithms
   algos = factor(algos[selected.algos$relevant.algos])
   data = subset(data, data[, algo.col] %in% algos)
   data[, algo.col] = factor(data[, algo.col], levels = algos)
   
   # Third Step: Find the best order of algorithms
-  if (length(algos) < 1L) {
-    stop("Found no relevant algorithm. Should not happen.")
-  }
   if (length(algos) == 1L) {
     perms = list(perm = algos, split.vals = NULL)
   }

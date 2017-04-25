@@ -32,7 +32,7 @@ with respect to your algorithm variable %s and your replication variable %s.\n",
   print(names(which(x$non.dominated.algos)))
   catf("\n")
   
-  if (length(x$non.dominated.algos == 1L)) {
+  if (length(x$non.dominated.algos) == 1L) {
 
     catf("Found only 1 non-dominated algorithm. It covers the complete joint front.")
     

@@ -27,16 +27,22 @@
 #'  of the algorithms and the validation data.
 #'  
 #' @export
-generateValidationData = function(N, M, split.type = "uniform", 
+generateValidationData = function(N, M, split.points, 
   discretize.type = "deterministic", replications.type = "parameter-noise", 
   k = 20L, replications = 10L) {
   
-  if (split.type == "uniform") {
-    split.points = switch(N, NULL, 0.5, c(0.33, 0.66), NULL, c(0.2, 0.4, 0.6, 0.8))
-  }
-  if (split.type == "non-uniform") {
-    split.points = switch(N, NULL, 0.2, c(0.3, 0.5), NULL, c(0.18, 0.2, 0.55, 0.75))
-  }
+  N = asInt(N)
+  M = asInt(M)
+  if (missing(split.points))
+    split.points = sort(runif(N - 1))
+  assert_numeric(split.points, lower = 0, upper = 1, len = N - 1)
+  if (is.unsorted(split.points))
+    stop("split.points must be increasing.")
+  assertChoice(discretize.type, choices = c("deterministic", "random",
+    "NSGA-II", "NSGA-II_g"))
+  assertChoice(replications.type, choices = c("parameter-noise", "point-noise"))
+  k = asInt(k)
+  replications = asInt(k)
   
   landscape = generateParetoLandscape(N = N, M = M, split.points = split.points)
   

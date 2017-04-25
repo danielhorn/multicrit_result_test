@@ -30,7 +30,7 @@ relevantAlgosMulticritSelection = function(data, var.cols, algo.col, repl.col, c
   combs = combs[-nrow(combs), ]
   colnames(combs) = algos
   # and compute its indicator value
-  contr.vals = t(apply(combs, 1, function(inds) c(sum(inds), getIndicatorValue( algos[inds]))))
+  contr.vals = t(apply(combs, 1, function(inds) c(sum(inds), getIndicatorValue(algos[inds]))))
   
   # normalize and augmented chebycheff of the 2 objective number of algos and indicator value
   contr.vals.norm = normalize(contr.vals, method = "range", margin = 2L)

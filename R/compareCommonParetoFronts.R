@@ -1,9 +1,14 @@
-# Maß zum Vergleich von der wahren und der geschaetzten gemeinsamen 
-# Paretofront. Nimmt Werte zwischen 0 (schlecht) und 1 (gut) an.
-
-## landscape: Ergebnis von generateParetoLandscape
-## portfolio: Ergebnis von MOSAP::selectPortfolio
-#'@export
+#' Measure for the comparison of a true and an estimated common pareto front.
+#'
+#' @param landscape 
+#'   Result of \code{generateParetoLandscape}.
+#' @param portfolio  
+#'   Result of \code{MOSAP::selectPortfolio}. 
+#' 
+#' @return [\code{numeric}]
+#'  Value between 0 and 1.
+#'  
+#' @export
 compareCommonParetoFronts = function(landscape, portfolio) {
   N = length(landscape$split.points) - 1
   n = length(portfolio$best.algo.order)

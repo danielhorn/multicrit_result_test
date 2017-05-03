@@ -23,6 +23,7 @@ plotValidationData = function(val.data, repl = 1L, grey = FALSE, return.plot = F
   algo.names = val.data$algos
   pl = ggplot(data = dat)
   pl = pl + ylim(min(dat$y), max(dat$y)) + xlim(min(dat$x), max(dat$x))
+  #FIXME
   pl = pl + geom_point(size = 2, mapping = aes_string(x = "x", y = "y", colour = "algorithm", 
     shape = "algorithm"))
   

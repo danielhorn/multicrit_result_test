@@ -4,9 +4,12 @@
 #'   Number of algorithms on the common pareto front.
 #' @param M [\code{integer}] \cr
 #'  Number of additional algorithms that are not on the commo pareto front.   
-#' @param split.type [\code{character}] \cr
-#'  Determines whether the split points between the algorithms are chosen in  a 
-#'  \code{uniform} or \code{non-uniform} way.
+#' @param split.points [\code{numeric string}] \cr
+#'  Sets the split points. If argument is missing, generates uniformly distributed split points.
+#'  @param algo.order [\code{integer vector}]\cr
+#'  Determines the order of algorithms, e.g. for plotting purpose or to generate
+#'  multiple sets of validation data with algorithms appearing in different ordering.
+#'  It has to be a permutation of 1,2,...,(N+M).
 #' @param discretize.type [\code{character}] \cr
 #'  Determines how the discrete approximation of the pareto front is done.
 #'  The values \code{deterministic}, \code{random}, \code{NSGA-II} and \code{NSGA-II_g}
@@ -27,7 +30,7 @@
 #'  of the algorithms and the validation data.
 #'  
 #' @export
-generateValidationData = function(N, M, split.points, 
+generateValidationData = function(N, M, split.points, algo.order,
   discretize.type = "deterministic", replications.type = "parameter-noise", 
   k = 20L, replications = 10L) {
   
@@ -43,6 +46,12 @@ generateValidationData = function(N, M, split.points,
   assertChoice(replications.type, choices = c("parameter-noise", "point-noise"))
   k = asInt(k)
   replications = asInt(k)
+  
+  if(missing(algo.order))
+    algo.order = 1:(N + M)
+  
+  assertInteger(as.integer(algo.order), unique = TRUE, len = (N+M))
+  assertSetEqual(algo.order,1:(N+M))
   
   landscape = generateParetoLandscape(N = N, M = M, split.points = split.points)
   
@@ -82,8 +91,12 @@ generateValidationData = function(N, M, split.points,
   
   colnames(X) = c("algorithm", "x", "y", "repl")
   
+  #generate names for algorithms corresponding to given algorithm order
+  algoNames = paste("algo", algo.order, sep="")
+  
   return(list(landscape = landscape,
-    algos = paste("algo", 1:(N + M), sep = ""),
+    #algos = paste("algo", 1:(N + M), sep = ""),
+    algos = algoNames,
     validationData = X
   ))
 }

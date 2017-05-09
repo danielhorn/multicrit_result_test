@@ -4,9 +4,9 @@
 #'   Number of algorithms on the common pareto front.
 #' @param M [\code{integer}] \cr
 #'  Number of additional algorithms that are not on the commo pareto front.   
-#' @param split.points [\code{numeric string}] \cr
-#'  Sets the split points. If argument is missing, generates uniformly distributed split points.
-#'  @param algo.order [\code{integer vector}]\cr
+#' @param split.points [\code{numeric(N - 1)}] \cr
+#'  Sets the split points, must be in [0, 1] and sorted. If argument is missing, generates uniformly distributed split points.
+#'  @param algo.order [\code{integer(N + M)}]\cr
 #'  Determines the order of algorithms, e.g. for plotting purpose or to generate
 #'  multiple sets of validation data with algorithms appearing in different ordering.
 #'  It has to be a permutation of 1,2,...,(N+M).
@@ -50,8 +50,8 @@ generateValidationData = function(N, M, split.points, algo.order,
   if(missing(algo.order))
     algo.order = 1:(N + M)
   
-  assertInteger(as.integer(algo.order), unique = TRUE, len = (N+M))
-  assertSetEqual(algo.order,1:(N+M))
+  algo.order = asInteger(algo.order, unique = TRUE, len = N + M)
+  assertSetEqual(algo.order, 1:(N + M))
   
   landscape = generateParetoLandscape(N = N, M = M, split.points = split.points)
   
@@ -92,10 +92,9 @@ generateValidationData = function(N, M, split.points, algo.order,
   colnames(X) = c("algorithm", "x", "y", "repl")
   
   #generate names for algorithms corresponding to given algorithm order
-  algoNames = paste("algo", algo.order, sep="")
+  algoNames = paste0("algo", algo.order)
   
   return(list(landscape = landscape,
-    #algos = paste("algo", 1:(N + M), sep = ""),
     algos = algoNames,
     validationData = X
   ))

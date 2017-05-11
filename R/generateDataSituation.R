@@ -32,6 +32,24 @@
 generateDataSituation = function(N, M, D, k = 20L, replications = 10L, data.situation) {
   rep.type = "parameter-noise"
   disc.type = "NSGA-II_g"
+  
+  ##################################
+  # some helper functions to later be moved elsewhere:
+  # adds algorithm names to a landscape
+  extendLandscape = function(x){
+    landscape = x$landscape
+    algos = x$algos
+    landscape$algos = algos
+    
+    return(landscape)
+  }
+  
+  # generates a result object
+  getResult = function(split.points, algos, data, landscape.list){
+    return(list(split.points = split.points, algs = algos, landscape.list = landscape))
+  }
+  
+  ##################################
 
   if(data.situation == 1) {
     
@@ -41,22 +59,29 @@ generateDataSituation = function(N, M, D, k = 20L, replications = 10L, data.situ
     split.dist = 1/N
     split.points = sapply(split.points, cumsum(rep(split.dist, (N-1))))
     
+    all.data = NULL
+    landscape.list = list()
+    
     # iterate over simulator to generate that part of the result:
     for(i in 1:D) {
-      tmp = generateValidationData(N = N, M = M, k = k, replications = replications, discretize.type = disc.type, replications.type = rep.type, 
+      
+      ith.result = generateValidationData(N = N, M = M, k = k, replications = replications, discretize.type = disc.type, replications.type = rep.type, 
                              split.points = split.points)
       
-      extendLandscape = function(x){
-        landscape = x$landscape
-        algos = x$algos
-        landscape$algos = algos
-        
-        return(landscape)
-      }
+      # add landscape of current set to landscape list
+      ith_landscape = extendLandscape(tmp)
+      landscape.list[[i]] = ith.landscape
       
+      # add data of current set to big data frame
+      ith.data = tmp$validationData
+      ith.data$data.set = i
+      all.data = rbind(all.data, ith.data)
     }
     
-    result = list(split.points = split.points, )
+    algo.names = paste0("algo", 1:(N+M))
+    
+    result = getResult(split.points = split.points, algos = algo.names, data = all.data, landscape.list = landscape.list)
+    return(result)
   }
   
 }

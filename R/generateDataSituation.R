@@ -46,7 +46,7 @@ generateDataSituation = function(N, M, D, k = 20L, replications = 10L, data.situ
   
   # generates a result object
   getResult = function(split.points, algos, data, landscape.list){
-    return(list(split.points = split.points, algs = algos, landscape.list = landscape))
+    return(list(split.points = split.points, algos = algos, landscape.list = landscape.list))
   }
   
   ##################################
@@ -55,9 +55,7 @@ generateDataSituation = function(N, M, D, k = 20L, replications = 10L, data.situ
     
     
     # generate exact, deterministic split points, used for every data set:
-    split.points = rep(0, (N-1))
-    split.dist = 1/N
-    split.points = sapply(split.points, cumsum(rep(split.dist, (N-1))))
+    split.points = generateSplitpoints(N)
     
     all.data = NULL
     landscape.list = list()
@@ -66,14 +64,14 @@ generateDataSituation = function(N, M, D, k = 20L, replications = 10L, data.situ
     for(i in 1:D) {
       
       ith.result = generateValidationData(N = N, M = M, k = k, replications = replications, discretize.type = disc.type, replications.type = rep.type, 
-                             split.points = split.points)
+                             split.points = split.points[,i])
       
       # add landscape of current set to landscape list
-      ith_landscape = extendLandscape(tmp)
-      landscape.list[[i]] = ith.landscape
+      ith.landscape = extendLandscape(ith.result)
+      landscape.list[[paste0("data", i)]] = ith.landscape
       
       # add data of current set to big data frame
-      ith.data = tmp$validationData
+      ith.data = ith.result$validationData
       ith.data$data.set = i
       all.data = rbind(all.data, ith.data)
     }
@@ -84,4 +82,43 @@ generateDataSituation = function(N, M, D, k = 20L, replications = 10L, data.situ
     return(result)
   }
   
+  
+  if(data.situation == 2) {
+    
+    # generate D times (N-1) split points with same mean:
+    split.points.matrix = generateSplitpoints(N = N, D = D, type = "noisy")
+  }
+}
+
+
+##FIXME: Move elsewhere!!
+# generates split points for different szenarios
+generateSplitpoints = function(N, D = 1, type = "normal", expected.splits, sigma) {
+  if(type == "normal") {
+    split.dist = 1/N
+    split.points = matrix(rep(cumsum(rep(split.dist, (N-1))), D), ncol = D)
+    
+    return(split.points)
+  }
+  
+  if(type == "noisy") {
+    if(missing(expected.splits)) {
+      expected.splits = generateSplitpoints(N)
+    }
+    
+    if(missing(sigma)) {
+      sigma = 0.01
+    }
+    
+    noisy.split.points = matrix(rnorm(D * (N - 1), expected.splits, sigma), ncol = D)
+    #FIXME: make sure split points are still sorted!
+    
+    return(noisy.split.points)
+  }
+  
+  if(type == "chaotic") {
+    chaotic.split.points = matrix(runif(D * (N - 1)), ncol = D)
+    chaotic.split.points = apply(chaotic.split.points, 2, sort)
+    return(chaotic.split.points)
+  }
 }

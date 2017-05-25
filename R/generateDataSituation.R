@@ -15,13 +15,13 @@
 #'  1: identical order of algorithms, split points identical
 #'  2: identical order of algorithms, split points noisy (same mean)
 #'  3: identical order of algorithms, split points differ ('complicated')
-#'  4: (mainly) identical order, identical split points; for each data set one algorithm that is
+#'  4: changed order, (mainly) identical split points; for each data set one algorithm that is
 #'     normally found on the common pareto front is missing (not on the front).
-#'  5: a normally dominated algorithm appears randomly on the common pareto front
-#'  6: order changed: on p% of data sets two algorithms are swapped, split points identical
-#'  7: dominated and non-dominated algorithm swapped
-#'  8: order random, split points identical
-#'  9: order and split points random
+#'  5: changed order: a normally dominated algorithm appears randomly on the common pareto front (reverse to 4)
+#'  6: changed order: dominated and non-dominated algorithm swapped (combines 4 and 5)
+#'  7: changed order: on p% of data sets two (non-dominated) algorithms are swapped, split points identical
+#'  8: random order, split points identical
+#'  9: random order and split points random
 #' 
 #' @return [\code{list}]
 #'  List that contains true split points, the names of the algorithms and validation data; and a list of lists (one for each data set), each containing the true (original) pareto landscape 
@@ -56,7 +56,7 @@ generateDataSituation = function(N, M, D, k = 20L, replications = 10L, data.situ
     
     # generate exact, deterministic split points:
     split.points = generateSplitpoints(N = N, D = D)
-    split.points = as.list(data.frame(split.points))
+    #split.points = as.list(data.frame(split.points))
 
     # make N and M vectors
     N = rep(N, D)

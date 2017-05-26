@@ -22,6 +22,11 @@
 #'  7: changed order: on p% of data sets two (non-dominated) algorithms are swapped, split points identical
 #'  8: random order, split points identical
 #'  9: random order and split points random
+#'  @param p [\code{numeric}] \cr
+#'  Parameter for data.situation 4-7: probability for a missing/ inserted/ swapped algorithm on each data set. Between 0 and 0.4 (?)
+#'  @param sigma [\code{numeric}] \cr
+#'  Parameter for data.situation 2
+#'  
 #' 
 #' @return [\code{list}]
 #'  List that contains true split points, the names of the algorithms and validation data; and a list of lists (one for each data set), each containing the true (original) pareto landscape 
@@ -29,7 +34,7 @@
 #'  of the algorithms.
 #'  
 #' @export
-generateDataSituation = function(N, M, D, k = 20L, replications = 10L, data.situation) {
+generateDataSituation = function(N, M, D, k = 20L, replications = 10L, data.situation, p, sigma) {
   rep.type = "parameter-noise"
   disc.type = "NSGA-II_g"
   
@@ -53,17 +58,17 @@ generateDataSituation = function(N, M, D, k = 20L, replications = 10L, data.situ
 
   if(data.situation == 1) {
     
-    
-    # generate exact, deterministic split points:
-    split.points = generateSplitpoints(N = N, D = D)
     #split.points = as.list(data.frame(split.points))
 
     # make N and M vectors
     N = rep(N, D)
     M = rep(M, D)
     
-    # generate fix order for all data sets
+    # generate matrix of order for all data sets
     algo.order = generateOrder(N = N, M = M, D = D, type = "fix")
+    
+    # generate exact, deterministic split points:
+    split.points = generateSplitpoints(N = N, D = D, algo.order = algo.order)
 
     ###############################
     # FIXME: create helper function

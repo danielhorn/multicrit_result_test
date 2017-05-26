@@ -1,7 +1,7 @@
 # Helper functions for generateDataSituation
 
 # Generates split points for different szenarios, where type determines whether they are fixed, noisy or without structure
-generateSplitpoints = function(N, D, type = "normal", standard.splits, sigma) {
+generateSplitpoints = function(N, D, algo.order, type = "normal", standard.splits, sigma) {
   if(type == "normal") {
     
     if(missing(standard.splits)) {
@@ -14,7 +14,7 @@ generateSplitpoints = function(N, D, type = "normal", standard.splits, sigma) {
     split.points = NULL
     
     for(i in 1:D) {
-
+      is.order.changed = algo.order[1:N[i],i] == 1:N[i]
       split.points = c(split.points, list(splits))
     }
 

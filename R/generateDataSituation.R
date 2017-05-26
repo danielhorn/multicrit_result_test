@@ -25,7 +25,7 @@
 #'  @param p [\code{numeric}] \cr
 #'  Parameter for data.situation 4-7: probability for a missing/ inserted/ swapped algorithm on each data set. Between 0 and 0.4 (?)
 #'  @param sigma [\code{numeric}] \cr
-#'  Parameter for data.situation 2
+#'  Parameter for data.situation 2 - noise strength
 #'  
 #' 
 #' @return [\code{list}]
@@ -34,9 +34,9 @@
 #'  of the algorithms.
 #'  
 #' @export
-generateDataSituation = function(N, M, D, k = 20L, replications = 10L, data.situation, p, sigma) {
-  rep.type = "parameter-noise"
-  disc.type = "NSGA-II_g"
+generateDataSituation = function(N, M, D, data.situation, p, sigma, ...) {
+  #rep.type = "parameter-noise"
+  #disc.type = "NSGA-II_g"
   
   ##################################
   # some helper functions to later be moved elsewhere:
@@ -68,7 +68,9 @@ generateDataSituation = function(N, M, D, k = 20L, replications = 10L, data.situ
     algo.order = generateOrder(N = N, M = M, D = D, type = "fix")
     
     # generate exact, deterministic split points:
-    split.points = generateSplitpoints(N = N, D = D, algo.order = algo.order)
+    standard.splits = seq(0, 1, length.out = N+1)[2:N]
+    split.points = generateSplitpoints(N = N, D = D, algo.order = algo.order,
+      standard.splits = standard.splits)
 
     ###############################
     # FIXME: create helper function
@@ -78,8 +80,8 @@ generateDataSituation = function(N, M, D, k = 20L, replications = 10L, data.situ
     # iterate over simulator to generate main part of the result:
     for(i in 1:D) {
       
-      ith.result = generateValidationData(N = N[i], M = M[i], k = k, replications = replications, discretize.type = disc.type, replications.type = rep.type, 
-                             split.points = split.points[[i]], algo.order = algo.order[,i])
+      ith.result = generateValidationData(
+        N = N[i], M = M[i], split.points = split.points[[i]], algo.order = algo.order[,i], ...)
       
       # add landscape of current set to landscape list
       ith.landscape = extendLandscape(ith.result)

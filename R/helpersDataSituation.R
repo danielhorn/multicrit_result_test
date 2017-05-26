@@ -60,29 +60,21 @@ generateSplitpoints = function(N, D, type = "normal", standard.splits, sigma) {
 
 generateOrder = function(N, M, D, type, p) {
   
-  if(type == "fix") {
-    #return(matrix(rep(1:(N[1]+M[1]),D), ncol = D)))
-    orderlist = NULL
+    ordermatrix = matrix(rep(1:(N[1]+M[1]), times = D), ncol = D)
+    
     for(i in 1:D) {
       
-      if(type == "fix") {
-        orderlist = c(orderlist, list(1:(N[i]+M[i])))
-        
-      } else if(type == "out") {
+      current.order = ordermatrix[,i]
+      
+      if(type == "out") {
         p.out = runif(1)
         if(p.out < p) {
           switched.alg = sample(size = 1, x = 1:N[i])
           
-          current.order = 1:(N[i]+M[i])
           current.order = current.order[-switched.alg]
           current.order = c(current.order,switched.alg)
           
-        } else current.order = 1:(N[i]+M[i])
-        
-        orderlist = c(orderlist, list(current.order))
-        
-        orderlist = c(orderlist, list(current.order))
-        
+        }
       } else if(type == "in") {
         
         p.in = runif(1)
@@ -90,12 +82,9 @@ generateOrder = function(N, M, D, type, p) {
           index.in = sample(size = 1, x = 1:N[i])
           switched.alg = sample(size = 1, x = (N[i]+1):M[i])
           
-          current.order = 1:(N[i]+M[i])
           current.order = current.order[-switched.alg]
           current.order = c(current.order[1:index.in],switched.alg,current.order[(index.in+1):(N[i]+M[i]-1)])
-        } else current.order = 1:(N[i]+M[i])
-        
-        orderlist = c(orderlist, list(current.order))
+        }
         
       } else if(type == "switch") {
         
@@ -104,24 +93,23 @@ generateOrder = function(N, M, D, type, p) {
           switch.out = sample(size = 1, x = 1:N[i])
           switch.in = sample(size = 1, x = (N[i]+1):M[i])
           
-          current.order = 1:(N[i]+M[i])
-          current.order = current.order[-c(switch.out,switch.in)]
-          current.order = c(current.order[1:(switch.out-1)],switch.in,current.order[(switch.out+1):(N[i]+M[i]-2)], switch.out)
+          current.order[switch.out] = switch.in
+          current.order[switch.in] = switch.out
           
-        } else current.order = 1:(N[i]+M[i])
-        
-        orderlist = c(orderlist, list(current.order))
+        }
         
       } else if(type == "swap") {
         p.swap = runif(1)
         if(p.swap < p) {
           swaps = sample(size = 2, x = 1:N[i], replace = FALSE)
-          swaps = sort(swaps)
-          current.order = 1:(N[i]+M[i])
-          current.order = c(current.order[1:(swaps[1]-1)],swaps[2],current.order[(swaps[1]+1):(swaps[2]-1)], swaps[1], current.order[-(1:swaps[2])])
+          current.order[swaps[1]] = swaps[2]
+          current.order[swaps[2]] = swaps[1]
         }
       }
+      
+      ordermatrix[,i] = current.order
     }
-    return(orderlist)
+    
+    return(ordermatrix)
   }
 }

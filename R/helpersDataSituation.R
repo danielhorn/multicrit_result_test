@@ -8,7 +8,6 @@ generateSplitpoints = function(N, D, algo.order, type = "normal", standard.split
     split.points = NULL
     
     for(i in 1:D) {
-      is.order.changed = algo.order[1:N[i], i] == 1:N[i]
       split.points = c(split.points, list(splits))
     }
     

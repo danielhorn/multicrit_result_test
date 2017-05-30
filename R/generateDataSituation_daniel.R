@@ -37,7 +37,7 @@
 generateDataSituation = function(N, M, D, type, p, sigma, ...) {
   
   ##################################
-  # some helper functions to later be moved elsewhere:
+  # small helper function later to be moved:
   # adds algorithm names to a landscape
   extendLandscape = function(x){
     landscape = x$landscape
@@ -46,6 +46,7 @@ generateDataSituation = function(N, M, D, type, p, sigma, ...) {
     
     return(landscape)
   }
+  ###################################
   
   # Default Orders und Splits
   split.points = seq(0, 1, length.out = N + 1)[2:N]
@@ -53,22 +54,29 @@ generateDataSituation = function(N, M, D, type, p, sigma, ...) {
   
   # Initialize result Data frame
   valid.data = BBmisc::makeDataFrame(nrow = 0, ncol = 5, col.types = "numeric",
-    col.names = c("algorith", "x", "y", "repl", "dataset"))
+    col.names = c("algorithm", "x", "y", "repl", "dataset"))
   landscapes = list()
   
-  ##################################
+  
+
   for (ds.id in seq_len(D)) {
+    
+    # Generate split points and algorithm order for certain single data situation
     ds = singleDataSituationData(type, N, M, split.points, algo.order, p, sigma)
+    
+    # Get specific N and M for ith data set
     N.i = length(ds$split.points) + 1
     M.i = N + M - N.i
-    #generateValidationData(N = N.i, M = M.i,
-    #  split.points = ds$split.points, algo.order = ds$algo.order, ...)
+    
     dat = generateValidationData(N = N.i, M = M.i,
       split.points = ds$split.points, algo.order = ds$algo.order,
       discretize.type = "NSGA-II_g", replications.type = "parameter-noise",
       k = 20L, replication = 10L)
     
+    # Add dataset column to validationData
     dat$validationData$dataset = ds.id
+    
+    # Store validation data and landscape in result objects
     valid.data = rbind(valid.data, dat$validationData)
     landscapes[[ds.id]] = extendLandscape(dat)
   }

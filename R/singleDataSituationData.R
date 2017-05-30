@@ -1,3 +1,5 @@
+# FIXME: Rosa Dokumentiert noch
+
 singleDataSituationData = function(situation, N, M, split.points, algo.order, p, sigma) {
   
   if(situation == 1L) {

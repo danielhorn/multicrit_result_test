@@ -47,32 +47,44 @@ generateDataSituation = function(N, M, D, type, p, sigma, ...) {
     return(landscape)
   }
   
-  # generates a result object
-  getResult = function(split.points, algos, data, landscape.list){
-    return(list(split.points = split.points, algos = algos, landscape.list = landscape.list))
-  }
-  
   # Default Orders und Splits
   split.points = seq(0, 1, length.out = N + 1)[2:N]
   algo.order = 1:(N + M)
   
+  # Initialize result Data frame
+  valid.data = BBmisc::makeDataFrame(nrow = 0, ncol = 5, col.types = "numeric",
+    col.names = c("algorith", "x", "y", "repl", "dataset"))
+  landscapes = list()
+  
   ##################################
   
   data.situation.params = lapply(1:D, function(i)
-    singleDataSituationData(situation = type))
+    singleDataSituationData(type, N, M, split.points, algo.order, p, sigma))
   
-  data.situations = lapply(data.situation.params, function(ds) {
+  
+  for (ds.id in seq_along(data.situation.params)) {
+    ds = data.situation.params[[ds.id]]
     N.i = length(ds$split.points) + 1
     M.i = N + M - N.i
     #generateValidationData(N = N.i, M = M.i,
     #  split.points = ds$split.points, algo.order = ds$algo.order, ...)
-    generateValidationData(N = N.i, M = M.i,
+    dat = generateValidationData(N = N.i, M = M.i,
       split.points = ds$split.points, algo.order = ds$algo.order,
       discretize.type = "NSGA-II_g", replications.type = "parameter-noise",
       k = 20L, replication = 10L)
-  })
+    
+    dat$validationData$dataset = ds.id
+    valid.data = rbind(valid.data, dat$validationData)
+    landscapes[[ds.id]] = extendLandscape(dat)
+  }
   
   
+  return(list(
+    valid.data = valid.data,
+    split.points = split.points,
+    algos = algos,
+    landscape.list = landscapes)
+  )
 }
 
 

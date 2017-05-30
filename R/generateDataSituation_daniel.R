@@ -57,13 +57,8 @@ generateDataSituation = function(N, M, D, type, p, sigma, ...) {
   landscapes = list()
   
   ##################################
-  
-  data.situation.params = lapply(1:D, function(i)
-    singleDataSituationData(type, N, M, split.points, algo.order, p, sigma))
-  
-  
-  for (ds.id in seq_along(data.situation.params)) {
-    ds = data.situation.params[[ds.id]]
+  for (ds.id in seq_len(D)) {
+    ds = singleDataSituationData(type, N, M, split.points, algo.order, p, sigma)
     N.i = length(ds$split.points) + 1
     M.i = N + M - N.i
     #generateValidationData(N = N.i, M = M.i,

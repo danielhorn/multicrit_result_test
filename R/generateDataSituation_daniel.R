@@ -85,7 +85,7 @@ generateDataSituation = function(N, M, D, type, p, sigma, ...) {
   return(list(
     valid.data = valid.data,
     split.points = split.points,
-    algos = algos,
+    algos = paste0("algo", algo.order),
     landscape.list = landscapes)
   )
 }

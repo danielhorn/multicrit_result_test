@@ -94,8 +94,10 @@ generateValidationData = function(N, M, split.points, algo.order,
   #generate names for algorithms corresponding to given algorithm order
   algoNames = paste0("algo", algo.order)
   
-  return(list(landscape = landscape,
+  res.obj = list(landscape = landscape,
     algos = algoNames,
     validationData = X
-  ))
+  )
+  
+  return(res.obj)
 }

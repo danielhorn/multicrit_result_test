@@ -214,8 +214,11 @@ generateParetoLandscape = function(N = 2L, M = 2L, split.points = 0.5,
   for (j in 1:N) {
     y.split.point[j + 1] = f.list[[j]](split.points[j + 1])
   }
-
-  return(list(pars = pars, f.list = f.list, split.points = split.points, 
-    y.split.point = y.split.point))
+  
+  res.obj = list(pars = pars, f.list = f.list, split.points = split.points, 
+    y.split.point = y.split.point)
+  class(res.obj) = "landscape"
+  
+  return(res.obj)
 }
 

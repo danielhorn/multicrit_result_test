@@ -53,7 +53,7 @@ generateValidationData = function(N, M, split.points, algo.order,
   algo.order = asInteger(algo.order, unique = TRUE, len = N + M)
   assertSetEqual(algo.order, 1:(N + M))
   
-  landscape = generateParetoLandscape(N = N, M = M, split.points = split.points)
+  landscape = generateParetoLandscape(N = N, M = M, split.points = split.points, algo.order = algo.order[1:N])
   
   landscape.list = list()
   

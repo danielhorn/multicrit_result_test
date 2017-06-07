@@ -2,6 +2,7 @@
 # N: Anzahl Fronten auf der gemeinsamen Front 
 # M: Anzahl Fronten ausserhalb der gemeinsamen Front ("Stoerfronten")
 # split.points: Schnittpunkte der Fronten auf der gemeinsamen Front
+# algo.order: Reihenfolge der Algorithmen auf der Paretofront
 
 # Technische Parameter:
 # max.iter: max. Neusampling einer Funktion, bis die letzte Funktion neu 
@@ -9,7 +10,7 @@
 # max.iter.k_c: max. Neusampling des Parameters c, bis die ganze Funktion neu 
 #   gesampelt wird
 
-generateParetoLandscape = function(N = 2L, M = 2L, split.points = 0.5,
+generateParetoLandscape = function(N = 2L, M = 2L, split.points = 0.5, algo.order,
   max.iter = 100L, max.iter.k_c = 10L) {
   
   assertInt(N, lower = 1, upper = Inf)
@@ -215,7 +216,7 @@ generateParetoLandscape = function(N = 2L, M = 2L, split.points = 0.5,
     y.split.point[j + 1] = f.list[[j]](split.points[j + 1])
   }
   
-  res.obj = list(pars = pars, f.list = f.list, split.points = split.points, 
+  res.obj = list(pars = pars, f.list = f.list, split.points = split.points, algo.order = algo.order,
     y.split.point = y.split.point)
   class(res.obj) = "landscape"
   

@@ -2,7 +2,8 @@
 # N: Anzahl Fronten auf der gemeinsamen Front 
 # M: Anzahl Fronten ausserhalb der gemeinsamen Front ("Stoerfronten")
 # split.points: Schnittpunkte der Fronten auf der gemeinsamen Front
-# algo.order: Reihenfolge der Algorithmen auf der Paretofront
+# algo.order: numerischer Vektor der Laenge N,
+#             Reihenfolge der Algorithmen auf der Paretofront
 
 # Technische Parameter:
 # max.iter: max. Neusampling einer Funktion, bis die letzte Funktion neu 
@@ -10,8 +11,8 @@
 # max.iter.k_c: max. Neusampling des Parameters c, bis die ganze Funktion neu 
 #   gesampelt wird
 
-generateParetoLandscape = function(N = 2L, M = 2L, split.points = 0.5,
-  algo.order = 1:(N + M), max.iter = 100L, max.iter.k_c = 10L) {
+generateParetoLandscape = function(id = "My Landscape", N = 2L, M = 2L, split.points = 0.5,
+  algo.order = 1:N, max.iter = 100L, max.iter.k_c = 10L) {
   
   assertInt(N, lower = 1, upper = Inf)
   assertInt(M, lower = 0, upper = Inf)
@@ -22,35 +23,39 @@ generateParetoLandscape = function(N = 2L, M = 2L, split.points = 0.5,
   
   assertInt(max.iter, lower = 1, upper = Inf)
   assertInt(max.iter.k_c, lower = 1, upper = Inf)
-
-  # erste Front samplen 
-  par1 = sampleParetoFrontParams()
-  # c samplen, leichte Verschiebung nach links
-  par1$c = abs(rnorm(1, mean = 0, sd = 0.05))
-  f.par1 = do.call(generateSingleParetoFront, as.list(par1))
-  # Verschieben nach oben/unten, sodass die Funktion durch c(0,1) geht
-  y_0 = f.par1(0)
-  par1$d = 1 - y_0
   
-  pars = BBmisc::convertListOfRowsToDataFrame(list(par1))
-  f.list = list(do.call(generateSingleParetoFront, as.list(pars[1, ])))
-  
+  # Initialisieren:
   split.points = c(0, split.points, 1)
-  # y-Werte an den Splitpoints
-  y.split.point = numeric(length(split.points))
-  y.split.point[1] = 1
+  
+  front.funs = list()
   
   # wird gebraucht, um spaeter die Funktionen vergleichen zu koennen, denn es
   # sollen sich 2 Funktionen jeweils nicht zu aehnlich sein.
   z1000 = seq(0, 1, length.out = 1000)
   Z = as.data.frame(matrix(ncol = N + M, nrow = 1000))
-  Z[, 1] = sapply(z1000, f.list[[1]])
   
   # welche Funktion ist wo auf der gemeinsamen Front?
-  for (i in 2:(N + 1)) {
-    Z$f[z1000 >= split.points[i-1] & z1000 <= split.points[i]] = (i-1)
+  for (i in 1:N) {
+    Z$f[z1000 >= split.points[i] & z1000 <= split.points[i + 1]] = (i)
   }
-
+  
+  # erste Front samplen 
+  par = sampleParetoFrontParams()
+  # c samplen, leichte Verschiebung nach links
+  par$c = abs(rnorm(1, mean = 0, sd = 0.05))
+  
+  front.funs[[1]] = structure(do.call(generateSingleParetoFront, par), 
+    id = paste0("algo", algo.order[1]),
+    range.x = split.points[1:2], 
+    class = "algo.obj"
+    )
+  
+  # Verschieben nach oben/unten, sodass die Funktion durch c(0,1) geht
+  setAlgoPar(front.funs[[1]], "d", 1 - front.funs[[1]](0))
+  
+  # Buchhaltung in f
+  Z[, 1] = sapply(z1000, front.funs[[1]])
+  
   # i: Zaehler fuer die Front
   i = 2
   # k: Zaehler fuer neues Sampling pro Front
@@ -86,16 +91,18 @@ generateParetoLandscape = function(N = 2L, M = 2L, split.points = 0.5,
       # nach rechts in die Naehe des Split-Punktes
       par$c = -abs(rnorm(1, mean = split.points[i], sd = 0.05))
       
-      f.par = do.call(generateSingleParetoFront, as.list(par))
+      front.funs[[i]] = structure(do.call(generateSingleParetoFront, par), 
+        id = paste0("algo", algo.order[2]),
+        range.x = split.points[i + 0:1], 
+        class = "algo.obj"
+      )
       
-      y.split.point[i] = f.list[[i - 1]](split.points[i])
-      
-      # Wert der neuen Funktion am Splitpunkt
-      y = f.par(split.points[i])
+      # Wert der alten und neuen Funktion am Splitpunkt
+      y.last = getAlgoRangeY(front.funs[[i - 1]])[2]
+      y.current = front.funs[[i]](split.points[i])
       
       # neue Funktion vertikal so verschieben, dass sie durch den Split-Punkt geht
-      par$d = y.split.point[i] - y
-      f.par = do.call(generateSingleParetoFront, as.list(par))
+      setAlgoPar(front.funs[[i]], "d", y.last - y.current)
       
       # Ueberpruefen, dass die neue Funktion (i) an allen vorherigen 
       # Splitpunkten (j in (1, ..., i-1)) groesser ist als die dazugehoerige 
@@ -107,44 +114,43 @@ generateParetoLandscape = function(N = 2L, M = 2L, split.points = 0.5,
       # neue Funktion an allen Stellen vor dem Splitpunkt größer als die dazugehörige
       # Funktion auf der gemeinsamen Front, an allen Stellen nach dem Splitpunkt bis
       # zum nächsten Splitpunkt größer als die Funktion j
-      Z[, i] = sapply(z1000, f.par)
+      Z[, i] = sapply(z1000, front.funs[[i]])
       
       for (j in 1:(i - 1)) { 
         # an allen Stellen vor dem aktuellen Splitpunkt soll die neue Funktion größer 
         # sein als die entsprechende auf der gemeinsamen Front
-        o = any((Z[Z$f == j, i] < Z[Z$f == j, j]))
-        if (o) break
+        ok = any((Z[Z$f == j, i] < Z[Z$f == j, j]))
+        if (ok) break
         
         # an allen Stellen nach dem aktuellen Splitpunkt bis zum nächsten Splitpunkt
         # soll die neue Funktion kleiner sein als alle anderen Funktionen bisher
-        o = any((Z[Z$f == i, i] > Z[Z$f == i, j]))
-        if (o) break
-
+        ok = any((Z[Z$f == i, i] > Z[Z$f == i, j]))
+        if (ok) break
+        
         # Funktionswert der neuen Funktion am Splitpunkt j
-        z1 = f.par(split.points[j])
+        z1 = front.funs[[i]](split.points[j])
         # Funktionswert der Funktion j am Splitpunkt j
-        z2 = f.list[[j]](split.points[j])
-        o = (z1 <= z2) 
-        if (o) break
+        z2 = front.funs[[j]](split.points[j])
+        ok = (z1 <= z2) 
+        if (ok) break
         
         # Funktionswerte der neuen Funktion und der Funktion j 
         # am Splitpunkt i+1
-        z1 = f.par(split.points[i + 1])
-        z2 = f.list[[j]](split.points[i + 1])
-        o = (z1 >= z2) 
-        if (o) break
+        z1 = front.funs[[i]](split.points[i + 1])
+        z2 = front.funs[[j]](split.points[i + 1])
+        ok = (z1 >= z2) 
+        if (ok) break
         
         # Ueberpruefen, ob die Funktion einer bisherigen anderen Funktion zu aehnlich ist
         # (mehr als 25% der Punkte zu aehnlich)
-        o = (quantile(abs(Z[, i] - Z[, j]), probs = 0.25, na.rm = TRUE) < 0.05)
-        if (o) break
+        ok = (quantile(abs(Z[, i] - Z[, j]), probs = 0.25, na.rm = TRUE) < 0.05)
+        if (ok) break
       }
       
-      if (o) {
+      if (ok) {
         k_c = k_c + 1
         next
       }
-      
       break
     }
     
@@ -154,20 +160,20 @@ generateParetoLandscape = function(N = 2L, M = 2L, split.points = 0.5,
       next
     }
     
-    
-    
-    # falls alles ok (oder i = 1), Funktion abspeichern, Zaehler k auf 0 setzen
+    # falls alles ok ist, Zaehler k auf 0 setzen und naechste Funktion
     k = 1
-    pars[i, ] = par
-    f.list[[i]] = f.par
+
     if (i == N) {
-      y.split.point[N + 1] = f.list[[N]](1)
+      #y.split.point[N + 1] = f.list[[N]](1)
       break
     }
     
     i = i + 1
     
   }
+  
+  # Current Front:
+  Z.front = apply(Z[, 1:N], 1, min)
   
   # Fronten ausserhalb der gemeinsamen Front
   if (M > 0) {
@@ -176,50 +182,53 @@ generateParetoLandscape = function(N = 2L, M = 2L, split.points = 0.5,
       # a und b sampeln, c und d erstmal wie eine der N Fronten auf der gemeinsamen
       # Front waehlen, dann noch etwas verschieben
       par = sampleParetoFrontParams()
-      J = sample(1:N, 1)
-      par$c = pars[J, ]$c - abs(rnorm(1, mean = 0, sd = 0.05))
-      par$d = pars[J, ]$d + abs(rnorm(1, mean = 0, sd = 0.05))
+      J = sample(N, 1)
+      par$c = getAlgoPar(front.funs[[J]], "c") - abs(rnorm(1, mean = 0, sd = 0.05))
+      par$d = getAlgoPar(front.funs[[J]], "d") + abs(rnorm(1, mean = 0, sd = 0.05))
       
-      f.par = do.call(generateSingleParetoFront, as.list(par))
-      Z[, N + m] = sapply(z1000, f.par)
+      front.funs[[N + m]] = structure(do.call(generateSingleParetoFront, par), 
+        id = paste0("algo", N + m),
+        range.x = numeric(0), 
+        class = "algo.obj"
+      )
       
-      if (intersectWithCommonFront(f.par, f.list, split.points, y.split.point, m, N, Z)) {
+      Z[, N + m] = sapply(z1000, front.funs[[N + m]])
+      
+      # Checks: Ist der neue immer hinter der front?
+      if (any(Z.front - Z[, N + m] > 0))
         next
-      }
       
-      pars[N + m, ] = par
-      f.list[[N + m]] = f.par
-      
-      if (m  == M) break
+      # Zu aehnlich mit einer alten Front?
+      dif.mat = abs(Z[, 1:(N + m - 1)] - Z[, N + m])
+      if (any(apply(dif.mat, 2, quantile, probs = 0.25, na.rm = TRUE) < 0.05))
+        next
+
+      if (m == M)
+        break
       
       m = m + 1
-      
     }
   }
   
   # zum Schluss alle Fronten auf y in (0, 1) Skalieren
   # (um y.min nach oben schieben, dann mit dem Abstand zwischen
   # y.min und y.max skalieren)
-  y.max = f.list[[1]](0)
-  y.min = f.list[[N]](1)
-
+  y.max = getAlgoRangeY(front.funs[[1]])[1]
+  y.min = getAlgoRangeY(front.funs[[N]])[2]
+  
   for (j in 1:(N + M)) {
-    pars[j, ]$d = pars[j, ]$d - y.min
-    pars[j, ]$e = abs(y.max - y.min)
-    f.list[[j]] = do.call(generateSingleParetoFront, as.list(pars[j, ]))
-  }
-
-  
-  # y-Werte an den Splitpoints nach der Skalierung:
-  y.split.point[1] = f.list[[1]](0)
-  for (j in 1:N) {
-    y.split.point[j + 1] = f.list[[j]](split.points[j + 1])
+    setAlgoPar(front.funs[[j]], "d", getAlgoPar(front.funs[[j]], "d") - y.min)
+    setAlgoPar(landscape[[j]], "d", abs(y.max - y.min))
   }
   
-  res.obj = list(pars = pars, f.list = f.list, split.points = split.points,
-    algo.order = paste0("algo", algo.order), y.split.point = y.split.point)
-  class(res.obj) = "landscape"
+  landscape = makeS3Obj(
+    id = id,
+    front.funs = front.funs,
+    split.points = split.points[2:(N - 1)],
+    algo.order = paste0("algo", algo.order),
+    classes = "landscape"
+  )
   
-  return(res.obj)
+  return(landscape)
 }
 

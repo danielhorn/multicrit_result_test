@@ -2,7 +2,7 @@
 #'
 #' @param val.data 
 #'   Result of \code{generateValidationData}.
-#' @param repl [\code{integer}] \cr
+#' @param repls [\code{integer}] \cr
 #'   Which replication should be plotted? Default is the first replication.
 #' @param grey [\code{logical}] \cr
 #'   Should the plot be in grey shades? Default is \code{FALSE}.
@@ -15,12 +15,12 @@
 #'   Should a legend be plotted? Default is \code{TRUE}.
 
 #' @export
-plotValidationData = function(val.data, repl = 1L, grey = FALSE, return.plot = FALSE, 
+plotValidationData = function(val.data, repls = 1L, grey = FALSE, return.plot = FALSE, 
   title = "", legend = TRUE) {
   n = length(val.data$landscape$f.list)
   
-  dat = val.data$validationData[val.data$validationData$repl == repl, ]
-  algo.names = val.data$algos
+  dat = val.data$validationData[val.data$validationData$repl %in% repls, ]
+  algo.names = val.data$landscape$algo.order
   pl = ggplot(data = dat)
   pl = pl + ylim(min(dat$y), max(dat$y)) + xlim(min(dat$x), max(dat$x))
   #FIXME

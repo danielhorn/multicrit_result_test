@@ -1,30 +1,38 @@
-# FIXME: Rosa dokumentiert noch
-getAlgoPar = function(algo.obj, par.name) {
-  environment(algo.obj)[[par.name]]
+# Getter für Parameter (par.name) der Algo-Funktion (algo.fun)
+getAlgoPar = function(algo.fun, par.name) {
+  environment(algo.fun)[[par.name]]
 }
 
-
-setAlgoPar = function(algo.obj, par.name, value) {
-  environment(algo.obj)[[par.name]] = value
+# Setter für Parameter (par.name) der Algo-Funktion (algo.fun) auf neuen Wert (value) 
+setAlgoPar = function(algo.fun, par.name, value) {
+  environment(algo.fun)[[par.name]] = value
   invisible(NULL)
 }
 
-
-getAlgoRangeY = function(algo.obj) {
-  algo.obj(getAlgoRangeX(algo.obj))
+# Getter für y-Range eines Algos algo.fun (auf der Front)
+getAlgoRangeY = function(algo.fun) {
+  algo.fun(getAlgoRangeX(algo.fun))
 }
 
-
-getAlgoRangeX = function(algo.obj) {
-  attr(algo.obj, which = "range.x")
+# Getter für x-Range eines Algos algo.fun (auf der Front) (ehem. split.points)
+getAlgoRangeX = function(algo.fun) {
+  attr(algo.fun, which = "range.x")
 }
 
-
-isAlgoParetoOpt = function(algo.obj) {
-  !is.null(getAlgoRangeX(algo.obj))
+# Boolean: Ist der Algo auf der Front vertreten?
+isAlgoParetoOpt = function(algo.fun) {
+  !(length(getAlgoRangeX(algo.fun)) == 0)
 }
 
-
+# Print-Funktion für Algorithmen-Objekt
 print.algo.obj = function(x) {
-  print("Diest ist eine algo obj")
+  cat("Algorithm:", attr(x, which = "id"), "\n")
+  cat("----------------- \n")
+  
+  if(isAlgoParetoOpt(x)) {
+    cat("\t Split points for X:", getAlgoRangeX(x), "\n")
+    cat("\t Split points for Y:", getAlgoRangeY(x), "\n")
+  } else cat("\t Is not pareto optimal \n")
+  cat("\n")
+  print(environment(x))
 }

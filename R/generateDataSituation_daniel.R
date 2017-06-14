@@ -39,13 +39,13 @@ generateDataSituation = function(N, M, D, type, p, sigma, ...) {
   ##################################
   # small helper function later to be moved:
   # adds algorithm names to a landscape
-  extendLandscape = function(x){
-    landscape = x$landscape
-    algos = x$algos
-    landscape$algos = algos
-    
-    return(landscape)
-  }
+  #extendLandscape = function(x){
+  #  landscape = x$landscape
+  #  algos = x$algos
+  #  landscape$algos = algos
+  #  
+  #  return(landscape)
+  #}
   ###################################
   
   # Default Orders und Splits

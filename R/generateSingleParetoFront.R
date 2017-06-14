@@ -6,7 +6,7 @@
 # b: > 0, je groesser b, desto hoeher liegt die Woelbung 
 # e: Skalierungsfaktor   
 generateSingleParetoFront = function(a, b, c = 0, d = 0, e = 1) {
-  g = function(x) {
+  function(x) {
     x = x + c
     
     if (b >= 0) {
@@ -22,6 +22,5 @@ generateSingleParetoFront = function(a, b, c = 0, d = 0, e = 1) {
     
     return(y)
   }
-  return(g)
 }
 

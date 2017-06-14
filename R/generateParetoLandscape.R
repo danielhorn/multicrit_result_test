@@ -11,8 +11,8 @@
 # max.iter.k_c: max. Neusampling des Parameters c, bis die ganze Funktion neu 
 #   gesampelt wird
 
-generateParetoLandscape = function(id = "My Landscape", N = 2L, M = 2L, split.points = 0.5,
-  algo.order = 1:N, max.iter = 100L, max.iter.k_c = 10L) {
+generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
+  split.points = c(1 / 3, 2/  3), algo.order = 1:N, max.iter = 100L, max.iter.k_c = 10L) {
   
   assertInt(N, lower = 1, upper = Inf)
   assertInt(M, lower = 0, upper = Inf)

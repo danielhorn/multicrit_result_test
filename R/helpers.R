@@ -52,21 +52,21 @@ intersectWithCommonFront = function(f.par, f.list, split.points, y.split.point,
 }
 
 ## Gets a paretoLandscape and adds a bit noise to every param
-makeNoisy = function(funs, sd = list(a = 0.03, b = 0.004, c = 0.02, d = 0.02)) {
-  addNoise = function(fun) {
-    params = as.list(environment(fun))
-    fun2 = fun
-    environment(fun2) = new.env()
-    environment(fun2)$a = params$a + rnorm(1, 0, sd$a)
-    environment(fun2)$b = params$b + rnorm(1, 0, sd$b)
-    environment(fun2)$c = params$c + rnorm(1, 0, sd$c)
-    environment(fun2)$d = params$d + rnorm(1, 0, sd$d)
-    environment(fun2)$e = params$e
-    environment(fun2)$g = params$g
-    fun2
+makeNoisy = function(landscape, sd = list(a = 0.03, b = 0.004, c = 0.02, d = 0.02)) {
+  addNoise = function(algo.obj) {
+    # First: Deep Copy the landscape - we need a new environment
+    old.pars = as.list(environment(algo.obj))
+    environment(algo.obj) = new.env()
+    setAlgoPar(algo.obj, "a", old.pars$a + rnorm(1, 0, sd$a))
+    setAlgoPar(algo.obj, "b", old.pars$b + rnorm(1, 0, sd$b))
+    setAlgoPar(algo.obj, "c", old.pars$c + rnorm(1, 0, sd$c))
+    setAlgoPar(algo.obj, "d", old.pars$d + rnorm(1, 0, sd$d))
+    setAlgoPar(algo.obj, "e", old.pars$e)
+    
+    algo.obj
   }
-  funs$f.list = lapply(funs$f.list, addNoise)
-  funs
+  landscape$front.funs = lapply(landscape$front.funs, addNoise)
+  landscape
 }
 
 

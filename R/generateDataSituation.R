@@ -10,7 +10,7 @@
 #'  Number of points that is generated for every algorithm.
 #' @param replications [\code{integer}] \cr
 #'  Number of replications of the discrete approximation.
-#' @param data.situation [\code{integer}] \cr
+#' @param type [\code{integer}] \cr
 #'  Number of data situation to generate:
 #'  1: identical order of algorithms, split points identical
 #'  2: identical order of algorithms, split points noisy (same mean)
@@ -34,79 +34,60 @@
 #'  of the algorithms.
 #'  
 #' @export
-generateDataSituation = function(N, M, D, data.situation, p, sigma, ...) {
-  #rep.type = "parameter-noise"
-  #disc.type = "NSGA-II_g"
+generateDataSituation = function(N, M, D, type, p, sigma, ...) {
   
   ##################################
-  # some helper functions to later be moved elsewhere:
+  # small helper function later to be moved:
   # adds algorithm names to a landscape
-  extendLandscape = function(x){
-    landscape = x$landscape
-    algos = x$algos
-    landscape$algos = algos
-    
-    return(landscape)
-  }
+  #extendLandscape = function(x){
+  #  landscape = x$landscape
+  #  algos = x$algos
+  #  landscape$algos = algos
+  #  
+  #  return(landscape)
+  #}
+  ###################################
   
-  # generates a result object
-  getResult = function(split.points, algos, data, landscape.list){
-    return(list(split.points = split.points, algos = algos, landscape.list = landscape.list))
-  }
+  # Default Orders und Splits
+  split.points = seq(0, 1, length.out = N + 1)[2:N]
+  algo.order = 1:(N + M)
   
-  ##################################
-
-  if(data.situation == 1) {
+  # Initialize result Data frame
+  valid.data = BBmisc::makeDataFrame(nrow = 0, ncol = 5, col.types = "numeric",
+    col.names = c("algorithm", "x", "y", "repl", "dataset"))
+  landscapes = list()
+  
+  
+  
+  for (ds.id in seq_len(D)) {
     
-    #split.points = as.list(data.frame(split.points))
-
-    # make N and M vectors
-    N = rep(N, D)
-    M = rep(M, D)
+    # Generate split points and algorithm order for certain single data situation
+    ds = singleDataSituationData(type, N, M, split.points, algo.order, p, sigma)
     
-    # generate matrix of order for all data sets
-    algo.order = generateOrder(N = N, M = M, D = D, type = "fix")
+    # Get specific N and M for ith data set
+    N.i = length(ds$split.points) + 1
+    M.i = N + M - N.i
     
-    # generate exact, deterministic split points:
-    standard.splits = seq(0, 1, length.out = N+1)[2:N]
-    split.points = generateSplitpoints(N = N, D = D, algo.order = algo.order,
-      standard.splits = standard.splits)
-
-    ###############################
-    # FIXME: create helper function
-    all.data = NULL
-    landscape.list = list()
+    dat = generateValidationData(N = N.i, M = M.i,
+      split.points = ds$split.points, algo.order = ds$algo.order,
+      discretize.type = "NSGA-II_g", replications.type = "parameter-noise",
+      k = 20L, replication = 10L)
     
-    # iterate over simulator to generate main part of the result:
-    for(i in 1:D) {
-      
-      ith.result = generateValidationData(
-        N = N[i], M = M[i], split.points = split.points[[i]], algo.order = algo.order[,i], ...)
-      
-      # add landscape of current set to landscape list
-      ith.landscape = extendLandscape(ith.result)
-      landscape.list[[paste0("data", i)]] = ith.landscape
-      
-      # add data of current set to big data frame
-      ith.data = ith.result$validationData
-      ith.data$data.set = i
-      all.data = rbind(all.data, ith.data)
-    }
-    #####################################
+    # Add dataset column to validationData
+    dat$validationData$dataset = ds.id
     
-    # resulting true order
-    algo.names = paste0("algo", 1:(N+M))
-    
-    result = getResult(split.points = split.points, algos = algo.names, data = all.data, landscape.list = landscape.list)
-    return(result)
+    # Store validation data and landscape in result objects
+    valid.data = rbind(valid.data, dat$validationData)
+    landscapes[[ds.id]] = dat$landscape
   }
   
   
-  if(data.situation == 2) {
-    
-    # generate D times (N-1) split points with same mean:
-    split.points.matrix = generateSplitpoints(N = N, D = D, type = "noisy")
-  }
+  return(list(
+    valid.data = valid.data,
+    split.points = split.points,
+    algos = paste0("algo", algo.order),
+    landscape.list = landscapes)
+  )
 }
 
 

@@ -3,6 +3,10 @@ getAlgoPar = function(algo.fun, par.name) {
   environment(algo.fun)[[par.name]]
 }
 
+getAlgoPars = function(algo.fun, par.names) {
+  sapply(par.names, getAlgoPar, algo.fun = algo.fun)
+}
+
 # Setter für Parameter (par.name) der Algo-Funktion (algo.fun) auf neuen Wert (value) 
 setAlgoPar = function(algo.fun, par.name, value) {
   environment(algo.fun)[[par.name]] = value
@@ -30,9 +34,11 @@ print.algo.obj = function(x) {
   cat("----------------- \n")
   
   if(isAlgoParetoOpt(x)) {
-    cat("\t Split points for X:", getAlgoRangeX(x), "\n")
-    cat("\t Split points for Y:", getAlgoRangeY(x), "\n")
+    cat("\t Pareto optimal for X in:", getAlgoRangeX(x), "\n")
+    cat("\t Pareto optimal for Y in:", getAlgoRangeY(x), "\n")
   } else cat("\t Is not pareto optimal \n")
   cat("\n")
-  print(environment(x))
+  pars = letters[1:5]
+  vals = sapply(pars, getAlgoPar, algo.fun = x)
+  print(vals)
 }

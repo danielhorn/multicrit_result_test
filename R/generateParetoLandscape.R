@@ -92,7 +92,7 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
       par$c = -abs(rnorm(1, mean = split.points[i], sd = 0.05))
       
       front.funs[[i]] = structure(do.call(generateSingleParetoFront, par), 
-        id = paste0("algo", algo.order[2]),
+        id = paste0("algo", algo.order[i]),
         range.x = split.points[i + 0:1], 
         class = "algo.obj"
       )
@@ -218,14 +218,14 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
   
   for (j in 1:(N + M)) {
     setAlgoPar(front.funs[[j]], "d", getAlgoPar(front.funs[[j]], "d") - y.min)
-    setAlgoPar(landscape[[j]], "d", abs(y.max - y.min))
+    setAlgoPar(front.funs[[j]], "e", abs(y.max - y.min))
   }
   
   landscape = makeS3Obj(
     id = id,
-    front.funs = front.funs,
-    split.points = split.points[2:(N - 1)],
-    algo.order = paste0("algo", algo.order),
+    f.list = front.funs,
+    #split.points = split.points[2:(N - 1)],
+    #algo.order = paste0("algo", algo.order),
     classes = "landscape"
   )
   

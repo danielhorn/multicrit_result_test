@@ -65,7 +65,7 @@ makeNoisy = function(landscape, sd = list(a = 0.03, b = 0.004, c = 0.02, d = 0.0
     
     algo.obj
   }
-  landscape$front.funs = lapply(landscape$front.funs, addNoise)
+  landscape$f.list = lapply(landscape$f.list, addNoise)
   landscape
 }
 

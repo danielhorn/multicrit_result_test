@@ -8,8 +8,7 @@ generatePointsWeighted = function(landscape, w) {
   res = data.frame()
   for (i in 1:length(landscape$f.list)) {
     fun = landscape$f.list[[i]]
-    pars = landscape$pars[i, ]
-    points = generateApprFrontWeighted(fun, pars, w)
+    points = generateApprFrontWeighted(fun, w)
     res.tmp = cbind(algorithm = paste("algo", i, sep = ""), points)
     res = rbind(res, res.tmp)
   }
@@ -17,9 +16,11 @@ generatePointsWeighted = function(landscape, w) {
 }
 
 ## Arbeiterfunktion: Erzeuge die Punkte fuer eine gegebene Funktion
-generateApprFrontWeighted = function(fun, pars, w) {
-  f.inv = generateSingleParetoFront(a = pars$a, b = -pars$b, c = 0, d = 0, e = 1)
-  xmin = f.inv(pars$e - pars$d) - pars$c
+generateApprFrontWeighted = function(fun, w) {
+  
+  pars = getAlgoPars(fun, letters[1:5])
+  f.inv = generateSingleParetoFront(a = pars["a"], b = -pars["b"], c = 0, d = 0, e = 1)
+  xmin = f.inv(pars["e"] - pars["d"]) - pars["c"]
   if (!is.finite(xmin)) {
     v = (1 - sapply(seq(0,1, length.out = 1001), fun)) ^ 2
     xmin = (which.min(v) - 1) / 1000

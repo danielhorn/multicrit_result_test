@@ -78,7 +78,7 @@ generateDataSituation = function(N, M, D, type, p, sigma, ...) {
     
     # Store validation data and landscape in result objects
     valid.data = rbind(valid.data, dat$validationData)
-    landscapes[[ds.id]] = extendLandscape(dat)
+    landscapes[[ds.id]] = dat$landscape
   }
   
   

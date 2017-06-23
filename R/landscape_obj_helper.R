@@ -30,12 +30,24 @@ getFrontAlgoCount = function(landscape) {
 #' print test result
 #' 
 #' @param x [\code{mosap_result}]\cr
-#'   Macht rosa
+#'   Landscape object
 #' @param ... [\code{any}] \cr
 #'   Not used.
 #'   
 #' @export
-
 print.landscape = function(x, ...) {
-  cat("Dies ist eine Landschaft")
+  cat("Landscape:", x$id, "\n")
+  cat("------------------------- \n")
+  
+  nm = length(x$f.list)
+  n = sum(sapply(x$f.list, isAlgoParetoOpt))
+  m = nm - n
+
+  cat("Containing", nm, "algorithms: \n")
+  cat(n, "pareto optimal algorithm(s) and", m, "dominated algorithm(s). \n")
+  cat("\n")
+  for(f in x$f.list) {
+    print(f)
+    cat("\n")
+  }
 }

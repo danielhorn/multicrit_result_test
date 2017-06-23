@@ -31,7 +31,7 @@ isAlgoParetoOpt = function(algo.fun) {
 }
 
 # Print-Funktion für Algorithmen-Objekt
-print.algo.obj = function(x) {
+print.algo.obj = function(x, ...) {
   cat("Algorithm:", attr(x, which = "id"), "\n")
   cat("----------------- \n")
   

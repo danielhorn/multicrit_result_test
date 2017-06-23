@@ -1,103 +1,84 @@
-#' Generates validation data for the algorithm portfolio selection.
+#' Simulates various data situations (each with multiple data sets).
 #'
 #' @param N [\code{integer}] \cr
 #'   Number of algorithms on the common pareto front.
 #' @param M [\code{integer}] \cr
-#'  Number of additional algorithms that are not on the commo pareto front.   
-#' @param split.points [\code{numeric(N - 1)}] \cr
-#'  Sets the split points, must be in [0, 1] and sorted. If argument is missing, generates uniformly distributed split points.
-#'  @param algo.order [\code{integer(N + M)}]\cr
-#'  Determines the order of algorithms, e.g. for plotting purpose or to generate
-#'  multiple sets of validation data with algorithms appearing in different ordering.
-#'  It has to be a permutation of 1,2,...,(N+M).
-#' @param discretize.type [\code{character}] \cr
-#'  Determines how the discrete approximation of the pareto front is done.
-#'  The values \code{deterministic}, \code{random}, \code{NSGA-II} and \code{NSGA-II_g}
-#'  are possible.
-#' @param replications.type [\code{character}] \cr
-#'  Determines whether noise is added to the parameters of the functions that form
-#'  the fronts (\code{parameter-noise}) or to the points (\code{point-noise}) to get 
-#'  replications of the discrete approximation. It is also possible to add no
-#'  noise (\code{replications.type = without-noise}).
+#'  Number of additional algorithms that are not on the common pareto front.
+#'  @param D [\code{integer}] \cr
+#'  Number of data sets.
 #' @param k [\code{integer}] \cr
 #'  Number of points that is generated for every algorithm.
 #' @param replications [\code{integer}] \cr
 #'  Number of replications of the discrete approximation.
+#' @param type [\code{integer}] \cr
+#'  Number of data situation to generate:
+#'  1: identical order of algorithms, split points identical
+#'  2: identical order of algorithms, split points noisy (same mean)
+#'  3: identical order of algorithms, split points differ ('complicated')
+#'  4: changed order, (mainly) identical split points; for each data set one algorithm that is
+#'     normally found on the common pareto front is missing (not on the front).
+#'  5: changed order: a normally dominated algorithm appears randomly on the common pareto front (reverse to 4)
+#'  6: changed order: dominated and non-dominated algorithm swapped (combines 4 and 5)
+#'  7: changed order: on p% of data sets two (non-dominated) algorithms are swapped, split points identical
+#'  8: random order, split points identical
+#'  9: random order and split points random
+#'  @param p [\code{numeric}] \cr
+#'  Parameter for data.situation 4-7: probability for a missing/ inserted/ swapped algorithm on each data set. Between 0 and 0.4 (?)
+#'  @param sigma [\code{numeric}] \cr
+#'  Parameter for data.situation 2 - noise strength
+#'  
 #' 
 #' @return [\code{list}]
-#'  List that contains the true (original) pareto landscape 
-#'  (functions that form the pareto fronts, true splitpoints, ...), the names
-#'  of the algorithms and the validation data.
+#'  List that contains true split points, the names of the algorithms and validation data; and a list of lists (one for each data set), each containing the true (original) pareto landscape 
+#'  (functions that form the pareto fronts, true splitpoints, ...) - INCLUDING the names
+#'  of the algorithms.
 #'  
 #' @export
-generateValidationData = function(N = 3, M = 1, split.points = c(1 / 3, 2 / 3),
-  algo.order = 1:N, discretize.type = "deterministic",
-  replications.type = "parameter-noise", k = 20L, replications = 10L) {
+generateValidationData = function(N, M, D, type, p, sigma, ...) {
   
-  N = asInt(N)
-  M = asInt(M)
-  if (missing(split.points))
-    split.points = sort(runif(N - 1))
-  assert_numeric(split.points, lower = 0, upper = 1, len = N - 1)
-  if (is.unsorted(split.points))
-    stop("split.points must be increasing.")
-  assertChoice(discretize.type, choices = c("deterministic", "random",
-    "NSGA-II", "NSGA-II_g"))
-  assertChoice(replications.type, choices = c("parameter-noise", "point-noise"))
-  k = asInt(k)
-  replications = asInt(k)
+  # Default Orders und Splits
+  split.points = seq(0, 1, length.out = N + 1)[2:N]
+  algo.order = 1:(N + M)
   
-  if(missing(algo.order))
-    algo.order = 1:N
-  
-  algo.order = asInteger(algo.order, unique = TRUE, len = N)
-  assertSetEqual(algo.order, 1:N)
-  
-  #
-  generateDiscreteParetoLandscape = switch(discretize.type, 
-    "deterministic" = generateDiscreteParetoLandscapeDeterministic, 
-    "random" = generateDiscreteParetoLandscapeRandom, 
-    "NSGA-II" = generateDiscreteParetoLandscapeNSGAII, 
-    "NSGA-II_g" = generateDiscreteParetoLandscapeNSGAII_g)
+  # Initialize result Data frame
+  valid.data = BBmisc::makeDataFrame(nrow = 0, ncol = 5, col.types = "numeric",
+    col.names = c("algorithm", "x", "y", "repl", "dataset"))
+  landscapes = list()
   
   
-  landscape = generateParetoLandscape(N = N, M = M, split.points = split.points,
-    algo.order = algo.order)
-
-
-  if (replications.type == "parameter-noise") {
-    landscape.list = lapply(1:replications, function(i) makeNoisy(landscape))
+  
+  for (ds.id in seq_len(D)) {
     
-    tmp = lapply(seq_along(landscape.list), function(i)
-      cbind(generateDiscreteParetoLandscape(landscape.list[[i]], k), i))
-    X = do.call(rbind, tmp)
+    # Generate split points and algorithm order for certain single data situation
+    ds = singleDataSituationData(type, N, M, split.points, algo.order, p, sigma)
+    
+    # Get specific N and M for ith data set
+    N.i = length(ds$split.points) + 1
+    M.i = N + M - N.i
+    
+    dat = generateSingleValidationData(N = N.i, M = M.i,
+      split.points = ds$split.points, algo.order = ds$algo.order[1:N.i],
+      discretize.type = "NSGA-II_g", replications.type = "parameter-noise",
+      k = 20L, replication = 10L)
+    
+    # Add dataset column to validationData
+    dat$validationData$dataset = ds.id
+    
+    # Store validation data and landscape in result objects
+    valid.data = rbind(valid.data, dat$validationData)
+    landscapes[[ds.id]] = dat$landscape
   }
   
-  if (replications.type == "point-noise") {
-    disc.ls = generateDiscreteParetoLandscape(landscape, k)
-    tmp = lapply(seq_along(landscape.list), function(i) {
-      randi = matrix(abs(rnorm(2 * nrow(disc.ls), 0, 0.02)), ncol = 2)
-      cbind(disc.ls[, 1], disc.ls[, 2:3] + randi, i)
-    }
-    )
-    X = do.call(rbind, tmp)
-  }
-  
-  if (replications.type == "without-noise") {
-    tmp = lapply(seq_along(landscape.list), function(i)
-      cbind(generateDiscreteParetoLandscape(landscape, k), i))
-    X = do.call(rbind, tmp)
-  }
-  
-  colnames(X) = c("algorithm", "x", "y", "repl")
-  
-  #generate names for algorithms corresponding to given algorithm order
-  algoNames = paste0("algo", algo.order)
-  
-  res.obj = list(landscape = landscape,
-    #algos = algoNames,
-    validationData = X
+  result = makeS3Obj(
+    valid.data = valid.data,
+    split.points = split.points,
+    algos = paste0("algo", algo.order),
+    landscape.list = landscapes,
+    
+    classes = "validation.obj"
   )
   
-  return(res.obj)
+  return(result)
 }
+
+

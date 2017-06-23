@@ -71,8 +71,9 @@ generateValidationData = function(N, M, D, type, p, sigma, ...) {
   
   result = makeS3Obj(
     valid.data = valid.data,
+    type = type,
     split.points = split.points,
-    algos = paste0("algo", algo.order),
+    algos = paste0("algo", algo.order[1:N]),
     landscape.list = landscapes,
     
     classes = "validation.obj"

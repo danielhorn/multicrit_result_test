@@ -3,8 +3,10 @@ getAlgoPar = function(algo.fun, par.name) {
   environment(algo.fun)[[par.name]]
 }
 
-getAlgoPars = function(algo.fun, par.names) {
-  sapply(par.names, getAlgoPar, algo.fun = algo.fun)
+getAlgoPars = function(algo.fun, par.names = letters[1:5]) {
+  l = lapply(par.names, getAlgoPar, algo.fun = algo.fun)
+  names(l) = par.names
+  l
 }
 
 # Setter für Parameter (par.name) der Algo-Funktion (algo.fun) auf neuen Wert (value) 

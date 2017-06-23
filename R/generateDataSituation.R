@@ -69,7 +69,7 @@ generateDataSituation = function(N, M, D, type, p, sigma, ...) {
     M.i = N + M - N.i
     
     dat = generateValidationData(N = N.i, M = M.i,
-      split.points = ds$split.points, algo.order = ds$algo.order,
+      split.points = ds$split.points, algo.order = ds$algo.order[1:N.i],
       discretize.type = "NSGA-II_g", replications.type = "parameter-noise",
       k = 20L, replication = 10L)
     

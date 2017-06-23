@@ -224,8 +224,6 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
   landscape = makeS3Obj(
     id = id,
     f.list = front.funs,
-    #split.points = split.points[2:(N - 1)],
-    #algo.order = paste0("algo", algo.order),
     classes = "landscape"
   )
   

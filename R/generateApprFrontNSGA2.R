@@ -17,8 +17,8 @@ generateZDT1Function = function(pareto.function, use.g = TRUE) {
 generatePointsNSGA2 = function(landscape, k, use.g, idim, generations) {
   res = data.frame()
   for (i in 1:length(landscape$f.list)) {
-    pars = landscape$pars[i, ]
     fun = landscape$f.list[[i]]
+    pars = getAlgoPars(fun, letters[1:5])
     
     f.inv = generateSingleParetoFront(a = pars$a, b = -pars$b, c = 0, d = 0, e = 1)
     xmin = f.inv(pars$e - pars$d) - pars$c

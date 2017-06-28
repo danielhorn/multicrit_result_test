@@ -75,7 +75,7 @@ generateValidationData = function(N, M, D, type, p, sigma, ...) {
     sigma = sigma,
     p = p,
     split.points = split.points,
-    algos = paste0("algo", algo.order[1:N]),
+    algos = paste0("algo", algo.order),
     landscape.list = landscapes,
     
     classes = "validation.obj"

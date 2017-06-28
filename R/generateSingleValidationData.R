@@ -47,9 +47,6 @@ generateSingleValidationData = function(N = 3, M = 1, split.points = c(1 / 3, 2 
   k = asInt(k)
   replications = asInt(k)
   
-  if(missing(algo.order))
-    algo.order = 1:N
-  
   algo.order = asInteger(algo.order, unique = TRUE, len = N)
   assertSetEqual(algo.order, 1:N)
   

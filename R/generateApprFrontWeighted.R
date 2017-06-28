@@ -19,8 +19,8 @@ generatePointsWeighted = function(landscape, w) {
 generateApprFrontWeighted = function(fun, w) {
   
   pars = getAlgoPars(fun, letters[1:5])
-  f.inv = generateSingleParetoFront(a = pars["a"], b = -pars["b"], c = 0, d = 0, e = 1)
-  xmin = f.inv(pars["e"] - pars["d"]) - pars["c"]
+  f.inv = generateSingleParetoFront(a = pars$a, b = -pars$b, c = 0, d = 0, e = 1)
+  xmin = f.inv(pars$e - pars$d) - pars$c
   if (!is.finite(xmin)) {
     v = (1 - sapply(seq(0,1, length.out = 1001), fun)) ^ 2
     xmin = (which.min(v) - 1) / 1000

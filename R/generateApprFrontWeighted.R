@@ -10,7 +10,8 @@ generatePointsWeighted = function(landscape, w) {
     fun = landscape$f.list[[i]]
     points = generateApprFrontWeighted(fun, w)
     ## FIXME: Hier nicht i!!! Ebenso in den anderen Generierern.
-    res.tmp = cbind(algorithm = paste("algo", i, sep = ""), points)
+    #res.tmp = cbind(algorithm = paste("algo", i, sep = ""), points)
+    res.tmp = cbind(algorithm = getAlgoID(fun), points)
     res = rbind(res, res.tmp)
   }
   return(res)

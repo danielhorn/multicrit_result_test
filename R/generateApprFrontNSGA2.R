@@ -40,7 +40,7 @@ generatePointsNSGA2 = function(landscape, k, use.g, idim, generations) {
     
     points$x = points$x * (xmax - xmin) + xmin
 
-    res.tmp = cbind(algorithm = paste("algo", i, sep = ""), points)
+    res.tmp = cbind(algorithm = getAlgoID(fun), points)
     res = rbind(res, res.tmp)
   }
   return(res)

@@ -48,7 +48,7 @@ generateSingleValidationData = function(N = 3, M = 1, split.points = c(1 / 3, 2 
   replications = asInt(k)
   
   algo.order = asInteger(algo.order, unique = TRUE, len = N)
-  assertSetEqual(algo.order, 1:N)
+  #assertSetEqual(algo.order, 1:N)
   
   #
   generateDiscreteParetoLandscape = switch(discretize.type, 

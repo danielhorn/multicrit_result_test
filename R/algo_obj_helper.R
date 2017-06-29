@@ -15,6 +15,11 @@ setAlgoPar = function(algo.fun, par.name, value) {
   invisible(NULL)
 }
 
+# Getter für Algo ID
+getAlgoID = function(algo.fun) {
+  attr(algo.fun, which = "id")
+}
+
 # Getter für y-Range eines Algos algo.fun (auf der Front)
 getAlgoRangeY = function(algo.fun) {
   algo.fun(getAlgoRangeX(algo.fun))

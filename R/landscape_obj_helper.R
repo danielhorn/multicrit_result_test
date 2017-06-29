@@ -10,10 +10,10 @@
   }
   
   if (element == "algo.order") {
-    left.border = unlist(lapply(landscape$f.list, function(x) 
-      c(na.omit(getAlgoRangeX(x)[1]))))
-    order = order(left.border)
-    return(sapply(landscape$f.list, function(f) attributes(f)$id)[order])
+    #left.border = unlist(lapply(landscape$f.list, function(x) 
+    #  c(na.omit(getAlgoRangeX(x)[1]))))
+    #order = order(left.border)
+    return(sapply(landscape$f.list, getAlgoID))#[order])
   }
   
   stopf("Landscape does not include the requested element %s.", element)

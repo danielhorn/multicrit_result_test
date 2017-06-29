@@ -101,7 +101,7 @@ singleDataSituationData = function(situation, N, M, split.points, algo.order, p,
       
       temp.sp = split.points[-index.in]
       sp.margin = c(0, split.points, 1)
-      
+      #FIXME Rosa weiß was zu tun ist
       new.splits = runif(2, sp.margin[index.in + 0:1], sp.margin[index.in + 1:2])
       split.points = append(temp.sp, new.splits, after = index.in)
       

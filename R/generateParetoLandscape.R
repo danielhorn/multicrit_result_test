@@ -12,7 +12,8 @@
 #   gesampelt wird
 
 generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
-  split.points = c(1 / 3, 2/  3), algo.order = 1:N, max.iter = 100L, max.iter.k_c = 10L) {
+  split.points = c(1 / 3, 2/  3), algo.order = 1:(N + M),
+  max.iter = 100L, max.iter.k_c = 10L) {
   
   assertInt(N, lower = 1, upper = Inf)
   assertInt(M, lower = 0, upper = Inf)
@@ -187,7 +188,7 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
       par$d = getAlgoPar(front.funs[[J]], "d") + abs(rnorm(1, mean = 0, sd = 0.05))
       
       front.funs[[N + m]] = structure(do.call(generateSingleParetoFront, par), 
-        id = paste0("algo", N + m),
+        id = paste0("algo", algo.order[N + m]),
         range.x = numeric(0), 
         class = "algo.obj"
       )

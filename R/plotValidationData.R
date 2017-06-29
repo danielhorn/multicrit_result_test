@@ -23,8 +23,8 @@ plotValidationData = function(val.data, repls = 1L, grey = FALSE, return.plot = 
   algo.names = val.data$algos
   n.data.sets = length(unique(dat$dataset))
   pl = ggplot(data = dat)
-  pl = pl + ylim(min(dat$y), max(dat$y)) + xlim(min(dat$x), max(dat$x))
-  #FIXME
+  #pl = pl + ylim(min(dat$y), max(dat$y)) + xlim(min(dat$x), max(dat$x))
+  pl = pl + ylim(0, 1) + xlim(0, 1)
   pl = pl + geom_point(size = 2, mapping = aes_string(x = "x", y = "y", colour = "algorithm", 
     shape = "algorithm")) + facet_wrap(~dataset)
   
@@ -45,7 +45,7 @@ plotValidationData = function(val.data, repls = 1L, grey = FALSE, return.plot = 
         
       } else {
         pl = pl + stat_function(aes_string("x", colour = "algorithm"), 
-          data = data.frame(x = c(0, 1), algorithm = algo.names[i], dataset = j), 
+          data = data.frame(x = c(0, 1), algorithm = val.dat$landscape.list[[j]]$algo.order[i], dataset = j), 
           fun = val.data$landscape.list[[j]]$f.list[[i]], size = 1)
       }
     }

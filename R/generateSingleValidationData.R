@@ -31,7 +31,7 @@
 #'  
 #'  
 generateSingleValidationData = function(N = 3, M = 1, split.points = c(1 / 3, 2 / 3),
-  algo.order = 1:N, discretize.type = "deterministic",
+  algo.order = 1:(N + M), discretize.type = "deterministic",
   replications.type = "parameter-noise", k = 20L, replications = 10L) {
   
   N = asInt(N)
@@ -47,8 +47,8 @@ generateSingleValidationData = function(N = 3, M = 1, split.points = c(1 / 3, 2 
   k = asInt(k)
   replications = asInt(k)
   
-  algo.order = asInteger(algo.order, unique = TRUE, len = N)
-  #assertSetEqual(algo.order, 1:N)
+  algo.order = asInteger(algo.order, unique = TRUE, len = (N + M))
+  assertSetEqual(algo.order, 1:(N + M))
   
   #
   generateDiscreteParetoLandscape = switch(discretize.type, 

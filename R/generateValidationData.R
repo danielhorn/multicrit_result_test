@@ -34,7 +34,7 @@
 #'  of the algorithms.
 #'  
 #' @export
-generateValidationData = function(N, M, D, type, p, sigma, ...) {
+generateValidationData = function(N, M, D, type, p = 0.5, sigma = 0.1, ...) {
   
   # Default Orders und Splits
   split.points = seq(0, 1, length.out = N + 1)[2:N]
@@ -56,7 +56,7 @@ generateValidationData = function(N, M, D, type, p, sigma, ...) {
     N.i = length(ds$split.points) + 1
     M.i = N + M - N.i
     
-    dat = generateSingleValidationData(N = N.i, M = M.i,
+    dat = generateSingleValidationData(id.num = ds.id, N = N.i, M = M.i,
       split.points = ds$split.points, algo.order = ds$algo.order,
       discretize.type = "NSGA-II_g", replications.type = "parameter-noise",
       k = 20L, replication = 10L)

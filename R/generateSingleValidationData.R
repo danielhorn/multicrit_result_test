@@ -32,7 +32,7 @@
 #'  
 generateSingleValidationData = function(N = 3, M = 1, split.points = c(1 / 3, 2 / 3),
   algo.order = 1:(N + M), discretize.type = "deterministic",
-  replications.type = "parameter-noise", k = 20L, replications = 10L) {
+  replications.type = "parameter-noise", k = 20L, replications = 10L, id.num) {
   
   N = asInt(N)
   M = asInt(M)
@@ -58,7 +58,7 @@ generateSingleValidationData = function(N = 3, M = 1, split.points = c(1 / 3, 2 
     "NSGA-II_g" = generateDiscreteParetoLandscapeNSGAII_g)
   
   
-  landscape = generateParetoLandscape(N = N, M = M, split.points = split.points,
+  landscape = generateParetoLandscape(id = paste("dataset",id.num), N = N, M = M, split.points = split.points,
     algo.order = algo.order)
 
 

@@ -94,16 +94,27 @@ singleDataSituationData = function(situation, N, M, split.points, algo.order, p,
     # Only with prob p switch
     if (rbinom(1, 1, p)) {
       
-      index.in = sample((N + 1), 1) -1
+      index.in = sample((N + 1), 1) - 1
       add.id = sample((N + 1):(N + M), 1)
       algo.order = algo.order[-add.id]
       algo.order = append(algo.order, add.id, after = index.in)
       
-      temp.sp = split.points[-index.in]
+      if (index.in != 0)
+        temp.sp = split.points[-index.in]
       sp.margin = c(0, split.points, 1)
-      #FIXME Rosa weiß was zu tun ist
-      new.splits = runif(2, sp.margin[index.in + 0:1], sp.margin[index.in + 1:2])
-      split.points = append(temp.sp, new.splits, after = index.in)
+      #FIXME Rosa wusste nicht was zu tun ist
+      if (index.in == 0) {
+        new.split = runif(1, 0, split.points[1])
+        split.points = c(new.split, split.points)
+      } else if (index.in == N) {
+        
+        new.split = runif(1, split.points[N - 1], 1)
+        split.points = c(split.points, new.split)
+      } else {
+        new.splits = runif(2, sp.margin[index.in + 0:1] + 1e-2,
+          sp.margin[index.in + 1:2] - 1e-2)
+        split.points = append(temp.sp, new.splits, after = index.in - 1)
+      }
       
       res.list = list(
         split.points = split.points,

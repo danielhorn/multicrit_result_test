@@ -36,6 +36,7 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
   Z = as.data.frame(matrix(ncol = N + M, nrow = 1000))
   
   # welche Funktion ist wo auf der gemeinsamen Front?
+  # TODO: Gleiche Matrix fuer Y-Werte. Rosa weiß was zu tun ist.
   for (i in 1:N) {
     Z$f[z1000 >= split.points[i] & z1000 <= split.points[i + 1]] = (i)
   }

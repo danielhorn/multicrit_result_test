@@ -45,7 +45,7 @@ plotValidationData = function(val.data, repls = 1L, grey = FALSE, return.plot = 
         
       } else {
         pl = pl + stat_function(aes_string("x", colour = "algorithm"), 
-          data = data.frame(x = c(0, 1), algorithm = val.dat$landscape.list[[j]]$algo.order[i], dataset = j), 
+          data = data.frame(x = c(0, 1), algorithm = val.data$landscape.list[[j]]$algo.order[i], dataset = j), 
           fun = val.data$landscape.list[[j]]$f.list[[i]], size = 1)
       }
     }

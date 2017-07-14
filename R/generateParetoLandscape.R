@@ -12,7 +12,7 @@
 #   gesampelt wird
 
 generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
-  split.points = c(1 / 3, 2/  3), algo.order = 1:(N + M),
+  split.points = c(1 / 3, 2 / 3), algo.order = 1:(N + M),
   max.iter = 100L, max.iter.k_c = 10L) {
   
   assertInt(N, lower = 1, upper = Inf)
@@ -32,13 +32,13 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
   
   # wird gebraucht, um spaeter die Funktionen vergleichen zu koennen, denn es
   # sollen sich 2 Funktionen jeweils nicht zu aehnlich sein.
-  z1000 = seq(0, 1, length.out = 1000)
-  Z = as.data.frame(matrix(ncol = N + M, nrow = 1000))
+  z.seq = seq(0, 1, length.out = 1001)
+  Z.X = as.data.frame(matrix(ncol = N + M, nrow = 1001))
+  Z.Y = Z.X
   
   # welche Funktion ist wo auf der gemeinsamen Front?
-  # TODO: Gleiche Matrix fuer Y-Werte. Rosa weiß was zu tun ist.
   for (i in 1:N) {
-    Z$f[z1000 >= split.points[i] & z1000 <= split.points[i + 1]] = (i)
+    Z.X$f[z.seq >= split.points[i] & z.seq <= split.points[i + 1]] = (i)
   }
   
   # erste Front samplen 
@@ -50,13 +50,14 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
     id = paste0("algo", algo.order[1]),
     range.x = split.points[1:2], 
     class = "algo.obj"
-    )
+  )
   
   # Verschieben nach oben/unten, sodass die Funktion durch c(0,1) geht
   setAlgoPar(front.funs[[1]], "d", 1 - front.funs[[1]](0))
   
   # Buchhaltung in f
-  Z[, 1] = sapply(z1000, front.funs[[1]])
+  Z.X[, 1] = sapply(z.seq, front.funs[[1]])
+  Z.Y[, 1] = sapply(z.seq, function(z) mean(z.seq[abs(Z.X[, 1] - z) < 1e-3]))
   
   # i: Zaehler fuer die Front
   i = 2
@@ -116,40 +117,45 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
       # neue Funktion an allen Stellen vor dem Splitpunkt größer als die dazugehörige
       # Funktion auf der gemeinsamen Front, an allen Stellen nach dem Splitpunkt bis
       # zum nächsten Splitpunkt größer als die Funktion j
-      Z[, i] = sapply(z1000, front.funs[[i]])
+      Z.X[, i] = sapply(z.seq, front.funs[[i]])
+      Z.Y[, i] = sapply(z.seq, function(z) mean(z.seq[abs(Z.X[, i] - z) < 1e-3]))
       
       for (j in 1:(i - 1)) { 
         # an allen Stellen vor dem aktuellen Splitpunkt soll die neue Funktion größer 
         # sein als die entsprechende auf der gemeinsamen Front
-        ok = any((Z[Z$f == j, i] < Z[Z$f == j, j]))
-        if (ok) break
+        notok = any((Z.X[Z.X$f == j, i] < Z.X[Z.X$f == j, j]))
+        if (notok) break
         
         # an allen Stellen nach dem aktuellen Splitpunkt bis zum nächsten Splitpunkt
         # soll die neue Funktion kleiner sein als alle anderen Funktionen bisher
-        ok = any((Z[Z$f == i, i] > Z[Z$f == i, j]))
-        if (ok) break
+        notok = any((Z.X[Z.X$f == i, i] > Z.X[Z.X$f == i, j]))
+        if (notok) break
         
         # Funktionswert der neuen Funktion am Splitpunkt j
         z1 = front.funs[[i]](split.points[j])
         # Funktionswert der Funktion j am Splitpunkt j
         z2 = front.funs[[j]](split.points[j])
-        ok = (z1 <= z2) 
-        if (ok) break
+        notok = (z1 <= z2) 
+        if (notok) break
         
         # Funktionswerte der neuen Funktion und der Funktion j 
         # am Splitpunkt i+1
         z1 = front.funs[[i]](split.points[i + 1])
         z2 = front.funs[[j]](split.points[i + 1])
-        ok = (z1 >= z2) 
-        if (ok) break
+        notok = (z1 >= z2) 
+        if (notok) break
         
         # Ueberpruefen, ob die Funktion einer bisherigen anderen Funktion zu aehnlich ist
         # (mehr als 25% der Punkte zu aehnlich)
-        ok = (quantile(abs(Z[, i] - Z[, j]), probs = 0.25, na.rm = TRUE) < 0.05)
-        if (ok) break
+        # in X
+        notok = (quantile(abs(Z.X[, i] - Z.X[, j]), probs = 0.25, na.rm = TRUE) < 0.05)
+        if (notok) break
+        # in Y
+        notok = (quantile(abs(Z.Y[, i] - Z.Y[, j]), probs = 0.25, na.rm = TRUE) < 0.05)
+        if (notok) break
       }
       
-      if (ok) {
+      if (notok) {
         k_c = k_c + 1
         next
       }
@@ -164,7 +170,7 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
     
     # falls alles ok ist, Zaehler k auf 0 setzen und naechste Funktion
     k = 1
-
+    
     if (i == N) {
       #y.split.point[N + 1] = f.list[[N]](1)
       break
@@ -175,7 +181,7 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
   }
   
   # Current Front:
-  Z.front = apply(Z[, 1:N], 1, min)
+  Z.front = apply(Z.X[, 1:N], 1, min)
   
   # Fronten ausserhalb der gemeinsamen Front
   if (M > 0) {
@@ -194,17 +200,23 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
         class = "algo.obj"
       )
       
-      Z[, N + m] = sapply(z1000, front.funs[[N + m]])
+      Z.X[, N + m] = sapply(z.seq, front.funs[[N + m]])
+      Z.Y[, N + m] = sapply(z.seq, function(z) mean(z.seq[abs(Z.X[, N + m] - z) < 1e-3]))
       
       # Checks: Ist der neue immer hinter der front?
-      if (any(Z.front - Z[, N + m] > 0))
+      if (any(Z.front - Z.X[, N + m] > 0))
         next
       
       # Zu aehnlich mit einer alten Front?
-      dif.mat = abs(Z[, 1:(N + m - 1)] - Z[, N + m])
+      # in X
+      dif.mat = abs(Z.X[, 1:(N + m - 1)] - Z.X[, N + m])
       if (any(apply(dif.mat, 2, quantile, probs = 0.25, na.rm = TRUE) < 0.05))
         next
-
+      # in Y
+      dif.mat = abs(Z.Y[, 1:(N + m - 1)] - Z.Y[, N + m])
+      if (any(apply(dif.mat, 2, quantile, probs = 0.25, na.rm = TRUE) < 0.05))
+        next
+      
       if (m == M)
         break
       

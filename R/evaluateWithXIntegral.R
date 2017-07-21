@@ -1,4 +1,5 @@
-#' Measure for the comparison of a true and an estimated common pareto front.
+#' Measure for the comparison of a true and an estimated common pareto front
+#' Only compares x-axes.
 #'
 #' @param landscape 
 #'   Result of \code{generateParetoLandscape}.
@@ -9,14 +10,14 @@
 #'  Value between 0 and 1.
 #'  
 #' @export
-compareCommonParetoFronts = function(landscape, portfolio) {
-  N = length(landscape$split.points) - 1
+evaluateWithXIntegral = function(validation.obj, portfolio) {
+  N = length(validation.obj$split.points) - 1
   n = length(portfolio$best.algo.order)
   
-  true.split.points = landscape$split.points
+  true.split.points = validation.obj$split.points
   estimated.split.points = c(0, portfolio$split.vals, 1)
   
-  rel.algo.names = paste("algo", 1:N, sep = "")
+  rel.algo.names = validation.obj$algos
   estimated.algo.order = portfolio$best.algo.order
   
   res = 0

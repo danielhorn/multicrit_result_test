@@ -16,12 +16,14 @@
 evaluatePortfolio = function(validation.obj, portfolio){
   x.error = evaluateWithXIntegral(validation.obj, portfolio)
   all.ds = unique(validation.obj$valid.data$dataset)
-  opt.gaps = numeric(length = length(all.ds))
+  #opt.gaps = numeric(length = length(all.ds))
+  hv.diffs = numeric(length = length(all.ds))
   
   for(ds in seq_along(all.ds)) {
-    opt.gaps[ds] = evaluateWithOptimalityGap(validation.obj, portfolio, all.ds[ds])
+    #opt.gaps[ds] = evaluateWithOptimalityGap(validation.obj, portfolio, all.ds[ds])
+    hv.diffs[ds] = evaluateWithHVDiff(validation.obj, portfolio, all.ds[ds])
   }
   
-  result = list(x.error = x.error, opt.gaps = opt.gaps)
+  result = list(x.error = x.error, hv.diffs = hv.diffs)
   return(result)
 }

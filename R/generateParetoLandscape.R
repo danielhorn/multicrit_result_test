@@ -15,8 +15,8 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
   split.points = c(1 / 3, 2 / 3), algo.order = 1:(N + M),
   max.iter = 100L, max.iter.k_c = 10L) {
   
-  assertInt(N, lower = 1, upper = Inf)
-  assertInt(M, lower = 0, upper = Inf)
+  N = asInt(N, lower = 1, upper = Inf)
+  M = asInt(M, lower = 0, upper = Inf)
   assertNumeric(split.points, len = N - 1, lower = 0, upper = 1, any.missing = FALSE, 
     unique = TRUE)
   if (any(diff(split.points) <= 0))
@@ -34,7 +34,6 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
   # sollen sich 2 Funktionen jeweils nicht zu aehnlich sein.
   z.seq = seq(0, 1, length.out = 1001)
   Z.X = as.data.frame(matrix(ncol = N + M, nrow = 1001))
-  Z.Y = Z.X
   
   # welche Funktion ist wo auf der gemeinsamen Front?
   for (i in 1:N) {
@@ -57,7 +56,6 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
   
   # Buchhaltung in f
   Z.X[, 1] = sapply(z.seq, front.funs[[1]])
-  Z.Y[, 1] = sapply(z.seq, function(z) mean(z.seq[abs(Z.X[, 1] - z) < 1e-3]))
   
   # i: Zaehler fuer die Front
   i = 2
@@ -72,7 +70,7 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
       # Falls wir die 1. Front wegmachen muessen, fangen wir einfach mal
       # komplett neu an
       if (i == 1)
-        return(Recall(N, M, split.points[-c(1, N + 1)], max.iter, max.iter.k_c))
+        return(Recall(id, N, M, split.points[-c(1, N + 1)], algo.order, max.iter, max.iter.k_c))
       next
     }
     
@@ -118,7 +116,6 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
       # Funktion auf der gemeinsamen Front, an allen Stellen nach dem Splitpunkt bis
       # zum nächsten Splitpunkt größer als die Funktion j
       Z.X[, i] = sapply(z.seq, front.funs[[i]])
-      Z.Y[, i] = sapply(z.seq, function(z) mean(z.seq[abs(Z.X[, i] - z) < 1e-3]))
       
       for (j in 1:(i - 1)) { 
         # an allen Stellen vor dem aktuellen Splitpunkt soll die neue Funktion größer 
@@ -147,11 +144,7 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
         
         # Ueberpruefen, ob die Funktion einer bisherigen anderen Funktion zu aehnlich ist
         # (mehr als 25% der Punkte zu aehnlich)
-        # in X
         notok = (quantile(abs(Z.X[, i] - Z.X[, j]), probs = 0.25, na.rm = TRUE) < 0.05)
-        if (notok) break
-        # in Y
-        notok = (quantile(abs(Z.Y[, i] - Z.Y[, j]), probs = 0.25, na.rm = TRUE) < 0.05)
         if (notok) break
       }
       
@@ -201,19 +194,13 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
       )
       
       Z.X[, N + m] = sapply(z.seq, front.funs[[N + m]])
-      Z.Y[, N + m] = sapply(z.seq, function(z) mean(z.seq[abs(Z.X[, N + m] - z) < 1e-3]))
       
       # Checks: Ist der neue immer hinter der front?
       if (any(Z.front - Z.X[, N + m] > 0))
         next
       
       # Zu aehnlich mit einer alten Front?
-      # in X
       dif.mat = abs(Z.X[, 1:(N + m - 1)] - Z.X[, N + m])
-      if (any(apply(dif.mat, 2, quantile, probs = 0.25, na.rm = TRUE) < 0.05))
-        next
-      # in Y
-      dif.mat = abs(Z.Y[, 1:(N + m - 1)] - Z.Y[, N + m])
       if (any(apply(dif.mat, 2, quantile, probs = 0.25, na.rm = TRUE) < 0.05))
         next
       
@@ -233,6 +220,27 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
   for (j in 1:(N + M)) {
     setAlgoPar(front.funs[[j]], "d", getAlgoPar(front.funs[[j]], "d") - y.min)
     setAlgoPar(front.funs[[j]], "e", abs(y.max - y.min))
+  }
+  
+  # Bis jetzt wurde nur ueberprueft, ob die Fronten sich in Y-Richtung nicht
+  # zu aehnlich sind. Im Nachhinein muessen wir jetzt noch pruefen, ob eine
+  # Aehnlichkeit in x-Richtung vorliegt. Dafuer bauen wir uns zunaechst
+  # eine Matrix genauso wie Z.X, nur in den andere Richtung. Hier muessen wir
+  # noch ein wenig tricksen, da wir die Umkehrfunktion der front.funs nicht
+  # kennen
+  Z.Y = as.data.frame(matrix(ncol = N + M, nrow = 1001))
+  for (j in 1:(N + M)) {
+    Z.Y[, j] = sapply(z.seq, function(z) mean(z.seq[abs(Z.X[, j] - z) < 5e-3]))
+  }
+  for (i in 2:(N + M)) {
+    dif.mat = abs(Z.Y[, 1:(i - 1), drop = FALSE] - Z.Y[, i])
+    diffs = apply(dif.mat, 2, quantile, probs = 0.33, na.rm = TRUE)
+    if (any(diffs < 0.033)) {
+      print("Recalled - zu aehnlich in Y")
+      # Falls es zu aehnlich ist, Recallen wir
+      return(Recall(id, N, M, split.points[-c(1, N + 1)], algo.order, max.iter, max.iter.k_c))
+    }
+      
   }
   
   landscape = makeS3Obj(

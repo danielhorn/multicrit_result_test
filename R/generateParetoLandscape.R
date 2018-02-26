@@ -228,14 +228,26 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
   # eine Matrix genauso wie Z.X, nur in den andere Richtung. Hier muessen wir
   # noch ein wenig tricksen, da wir die Umkehrfunktion der front.funs nicht
   # kennen
+  # Dafuer muessen wir  zunaechst Z.X neu bestimmen, da wir jetzt normalisiert
+  # haben
+  for (i in 1:(N + M)) {
+    Z.X[, i] = sapply(z.seq, front.funs[[i]])
+  }
   Z.Y = as.data.frame(matrix(ncol = N + M, nrow = 1001))
   for (j in 1:(N + M)) {
-    Z.Y[, j] = sapply(z.seq, function(z) mean(z.seq[abs(Z.X[, j] - z) < 5e-3]))
+    Z.Y[, j] = sapply(z.seq, function(z) mean(z.seq[abs(Z.X[, j] - z) < 5e-2]))
+    # NaNs in Z.Y sind moeglich:
+    # 2 moegliche Ursachen: Die Funktion ist zu "steilt" und es liegen keine
+    # Punkte aus Z.X im Berech < 5e-2. Das sollte nur selten auftreten (Daumen
+    # drueck), ansonsten muessen wir uns darum noch kuemmern.
+    # Anderer Fall: Die Front des Algo deckt nur einen kleinen Teil des Bereich
+    # in y-Richtung ab (z.B. nur von 1.0 bis 0.8).
   }
+  
   for (i in 2:(N + M)) {
     dif.mat = abs(Z.Y[, 1:(i - 1), drop = FALSE] - Z.Y[, i])
     diffs = apply(dif.mat, 2, quantile, probs = 0.33, na.rm = TRUE)
-    if (any(diffs < 0.033)) {
+    if (any(diffs < 0.025)) {
       print("Recalled - zu aehnlich in Y")
       # Falls es zu aehnlich ist, Recallen wir
       return(Recall(id, N, M, split.points[-c(1, N + 1)], algo.order, max.iter, max.iter.k_c))

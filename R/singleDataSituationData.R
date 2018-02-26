@@ -33,7 +33,9 @@
 
 singleDataSituationData = function(situation, N, M, split.points, algo.order, p, sigma) {
   
+  counter = 0
   repeat {
+    counter = counter + 1
     if (situation == 1L) {
       # Return standard split points and algorithm order
       res.list = list(
@@ -191,9 +193,12 @@ singleDataSituationData = function(situation, N, M, split.points, algo.order, p,
     }
     
     # Sicherheitscheckt und notfalls Recall:
-    dists = res.list$split.points[-1] - res.list$split.points[-(N - 1)]
+    dists = c(res.list$split.points, 1) - c(0, res.list$split.points)
     if (all(dists > 0.025)) {
       break
+    }
+    if (counter == 10L) {
+      stop("Not able to find proper split.points. Please adjust sigma.")
     }
   }
   

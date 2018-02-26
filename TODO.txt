@@ -12,3 +12,5 @@ selection graphik nicht nur mediane
 - 10 Runs versus 1 Noisy Run
 
 Anwendung BBOB
+
+Simulator muss auch fuer N = 1 klappen

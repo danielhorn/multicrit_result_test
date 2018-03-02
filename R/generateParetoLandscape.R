@@ -61,7 +61,7 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
   i = 2
   # k: Zaehler fuer neues Sampling pro Front
   k = 0
-  repeat {
+  while (i <= N) {
     # Zaehler k hochsetzen. Falls Maximum erreicht, letzte Front neu sampeln
     k = k + 1
     if (k == max.iter && i >= 2) {
@@ -163,18 +163,11 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
     
     # falls alles ok ist, Zaehler k auf 0 setzen und naechste Funktion
     k = 1
-    
-    if (i == N) {
-      #y.split.point[N + 1] = f.list[[N]](1)
-      break
-    }
-    
     i = i + 1
-    
   }
   
   # Current Front:
-  Z.front = apply(Z.X[, 1:N], 1, min)
+  Z.front = apply(Z.X[, 1:N, drop = FALSE], 1, min)
   
   # Fronten ausserhalb der gemeinsamen Front
   if (M > 0) {
@@ -200,7 +193,7 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
         next
       
       # Zu aehnlich mit einer alten Front?
-      dif.mat = abs(Z.X[, 1:(N + m - 1)] - Z.X[, N + m])
+      dif.mat = abs(Z.X[, 1:(N + m - 1), drop = FALSE] - Z.X[, N + m])
       if (any(apply(dif.mat, 2, quantile, probs = 0.25, na.rm = TRUE) < 0.05))
         next
       
@@ -244,7 +237,7 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
     # in y-Richtung ab (z.B. nur von 1.0 bis 0.8).
   }
   
-  for (i in 2:(N + M)) {
+  for (i in 1 + seq_len(N + M - 1)) {
     dif.mat = abs(Z.Y[, 1:(i - 1), drop = FALSE] - Z.Y[, i])
     diffs = apply(dif.mat, 2, quantile, probs = 0.33, na.rm = TRUE)
     if (any(diffs < 0.025)) {

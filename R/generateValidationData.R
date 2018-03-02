@@ -37,7 +37,11 @@
 generateValidationData = function(N, M, D, type, p = 0.5, sigma = 0.1, ...) {
   
   # Default Orders und Splits
-  split.points = seq(0, 1, length.out = N + 1)[2:N]
+  if (N == 1L) {
+    split.points = numeric(0)
+  } else {
+    split.points = seq(0, 1, length.out = N + 1)[2:N]
+  }
   algo.order = 1:(N + M)
   
   # Initialize result Data frame
@@ -45,6 +49,7 @@ generateValidationData = function(N, M, D, type, p = 0.5, sigma = 0.1, ...) {
     col.names = c("algorithm", "x", "y", "repl", "dataset"))
   landscapes = list()
   
+  ## Ueberpruefen, ob N zu klein fuer die jeweilige Situation ist
   
   
   for (ds.id in seq_len(D)) {

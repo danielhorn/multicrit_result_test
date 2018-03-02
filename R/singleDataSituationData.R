@@ -99,33 +99,32 @@ singleDataSituationData = function(situation, N, M, split.points, algo.order, p,
         
         index.in = sample((N + 1), 1) - 1
         add.id = sample((N + 1):(N + M), 1)
-        algo.order = algo.order[-add.id]
-        algo.order = append(algo.order, add.id, after = index.in)
+        new.algo.order = algo.order[-add.id]
+        new.algo.order = append(new.algo.order, add.id, after = index.in)
         
         if (index.in != 0)
           temp.sp = split.points[-index.in]
         sp.margin = c(0, split.points, 1)
-        #FIXME Rosa wusste nicht was zu tun ist
         if (index.in == 0) {
           new.split = runif(1, 0, split.points[1])
-          split.points = c(new.split, split.points)
+          new.split.points = c(new.split, split.points)
         } else if (index.in == N) {
           
           new.split = runif(1, split.points[N - 1], 1)
-          split.points = c(split.points, new.split)
+          new.split.points = c(split.points, new.split)
         } else {
           new.splits = runif(2, sp.margin[index.in + 0:1] + 1e-2,
             sp.margin[index.in + 1:2] - 1e-2)
-          split.points = append(temp.sp, new.splits, after = index.in - 1)
+          new.split.points = append(temp.sp, new.splits, after = index.in - 1)
         }
         
         res.list = list(
-          split.points = split.points,
-          algo.order = algo.order
+          split.points = new.split.points,
+          algo.order = new.algo.order
         )
         
         # ELSE: return defaults (no algorithm added)
-      } else{
+      } else {
         res.list = list(
           split.points = split.points,
           algo.order = algo.order
@@ -193,7 +192,12 @@ singleDataSituationData = function(situation, N, M, split.points, algo.order, p,
     }
     
     # Sicherheitscheckt und notfalls Recall:
+    if (length(res.list$split.points == 0)) {
+      break
+    }
     dists = c(res.list$split.points, 1) - c(0, res.list$split.points)
+    print(res.list$split.points)
+    print(dists)
     if (all(dists > 0.025)) {
       break
     }

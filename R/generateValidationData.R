@@ -34,7 +34,11 @@
 #'  of the algorithms.
 #'  
 #' @export
-generateValidationData = function(N, M, D, type, p = 0.5, sigma = 0.1, ...) {
+generateValidationData = function(N, M, D, type, p = 0.5, sigma, ...) {
+  # Alter sigma-Standard: 0.1
+  if(missing(sigma)){
+    sigma = 1/(4*N)
+  }
   
   # Default Orders und Splits
   if (N == 1L) {
@@ -49,8 +53,21 @@ generateValidationData = function(N, M, D, type, p = 0.5, sigma = 0.1, ...) {
     col.names = c("algorithm", "x", "y", "repl", "dataset"))
   landscapes = list()
   
-  ## Ueberpruefen, ob N zu klein fuer die jeweilige Situation ist
+  ## Ueberpruefen, ob N oder M zu klein fuer die jeweilige Situation ist
   
+  if(type == 1 || type == 2 || type == 3 || type == 8 || type == 9){
+    if(N < 1 || M < 0){
+      stop("N should be >= 1 and M must not be negative.")
+    }
+  } else if(type == 4 || type == 7){
+    if(N < 2 || M < 0){
+      stop("N has to be > 1 and M must not be negative.")
+    }
+  } else if(type == 5 || type == 6){
+    if(M < 1 || N < 1){
+      stop("N should be >= 1 and M must be positive.")
+    }
+  }
   
   for (ds.id in seq_len(D)) {
     

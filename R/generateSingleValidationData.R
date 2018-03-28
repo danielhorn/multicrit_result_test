@@ -38,6 +38,7 @@ generateSingleValidationData = function(N = 3, M = 1, split.points = c(1 / 3, 2 
   M = asInt(M)
   if (missing(split.points))
     split.points = sort(runif(N - 1))
+  #TODO: Type 5 bug
   assert_numeric(split.points, lower = 0, upper = 1, len = N - 1)
   if (is.unsorted(split.points))
     stop("split.points must be increasing.")
@@ -47,6 +48,7 @@ generateSingleValidationData = function(N = 3, M = 1, split.points = c(1 / 3, 2 
   k = asInt(k)
   replications = asInt(k)
   
+  #TODO: Type 5 bug
   algo.order = asInteger(algo.order, unique = TRUE, len = (N + M))
   assertSetEqual(algo.order, 1:(N + M))
   

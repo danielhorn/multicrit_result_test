@@ -96,28 +96,35 @@ singleDataSituationData = function(situation, N, M, split.points, algo.order, p,
     if (situation == 5L) {
       # Only with prob p switch
       if (rbinom(1, 1, p)) {
-        
-        index.in = sample((N + 1), 1) - 1
-        add.id = sample((N + 1):(N + M), 1)
-        new.algo.order = algo.order[-add.id]
-        new.algo.order = append(new.algo.order, add.id, after = index.in)
-        
-        if (index.in != 0)
-          temp.sp = split.points[-index.in]
-        sp.margin = c(0, split.points, 1)
-        if (index.in == 0) {
-          new.split = runif(1, 0, split.points[1])
-          new.split.points = c(new.split, split.points)
-        } else if (index.in == N) {
+        # Case N=1 is different
+        if(N > 1){
+          index.in = sample((N + 1), 1) - 1
+          add.id = sample((N + 1):(N + M), 1)
+          #new.algo.order = algo.order[-add.id] Maybe don't? algo.order contains only nd-algos
+          new.algo.order = append(algo.order, add.id, after = index.in)
           
-          new.split = runif(1, split.points[N - 1], 1)
-          new.split.points = c(split.points, new.split)
+          if (index.in != 0)
+            temp.sp = split.points[-index.in]
+          sp.margin = c(0, split.points, 1)
+          if (index.in == 0) {
+            new.split = runif(1, 0, split.points[1])
+            new.split.points = c(new.split, split.points)
+          } else if (index.in == N) {
+            
+            new.split = runif(1, split.points[N - 1], 1)
+            new.split.points = c(split.points, new.split)
+          } else {
+            new.splits = runif(2, sp.margin[index.in + 0:1] + 1e-2,
+                               sp.margin[index.in + 1:2] - 1e-2)
+            new.split.points = append(temp.sp, new.splits, after = index.in - 1)
+          }
         } else {
-          new.splits = runif(2, sp.margin[index.in + 0:1] + 1e-2,
-            sp.margin[index.in + 1:2] - 1e-2)
-          new.split.points = append(temp.sp, new.splits, after = index.in - 1)
+          index.in = sample(c(0,1), 1)
+          add.id = sample((N + 1):(N + M), 1)
+          new.algo.order = append(algo.order, add.id, after = index.in)
+          new.split.points = runif(1, 0, 1)
+          
         }
-        
         res.list = list(
           split.points = new.split.points,
           algo.order = new.algo.order
@@ -178,17 +185,31 @@ singleDataSituationData = function(situation, N, M, split.points, algo.order, p,
     }
     
     if (situation == 8L) {
-      res.list = list(
-        split.points = split.points,
-        algo.order = c(sample(N), (N + 1) : (N + M))
-      )
+      if(N > 1){
+        res.list = list(
+          split.points = split.points,
+          algo.order = c(sample(N), (N + 1) : (N + M))
+        )
+      } else{
+        res.list = list(
+          split.points = split.points,
+          algo.order = algo.order
+        )
+      }
     }
     
     if (situation == 9L) {
-      res.list = list(
-        split.points = sort(runif(N - 1)),
-        algo.order = c(sample(N), (N + 1) : (N + M))
-      )
+      if(N > 1){
+        res.list = list(
+          split.points = sort(runif(N - 1)),
+          algo.order = c(sample(N), (N + 1) : (N + M))
+        )
+      } else{
+        res.list = list(
+          split.points = split.points,
+          algo.order = algo.order
+        )
+      }
     }
     
     # Sicherheitscheckt und notfalls Recall:

@@ -97,31 +97,32 @@ singleDataSituationData = function(situation, N, M, split.points, algo.order, p,
       # Only with prob p switch
       if (rbinom(1, 1, p)) {
         # Case N=1 is different
-        if(N > 1){
+        if (N > 1) {
           index.in = sample((N + 1), 1) - 1
           add.id = sample((N + 1):(N + M), 1)
-          #new.algo.order = algo.order[-add.id] Maybe don't? algo.order contains only nd-algos
-          new.algo.order = append(algo.order, add.id, after = index.in)
+          new.algo.order = algo.order[-add.id]
+          new.algo.order = append(new.algo.order, add.id, after = index.in)
           
-          if (index.in != 0)
+          if (index.in != 0) {
             temp.sp = split.points[-index.in]
+          }
           sp.margin = c(0, split.points, 1)
           if (index.in == 0) {
             new.split = runif(1, 0, split.points[1])
             new.split.points = c(new.split, split.points)
           } else if (index.in == N) {
-            
             new.split = runif(1, split.points[N - 1], 1)
             new.split.points = c(split.points, new.split)
           } else {
             new.splits = runif(2, sp.margin[index.in + 0:1] + 1e-2,
-                               sp.margin[index.in + 1:2] - 1e-2)
+              sp.margin[index.in + 1:2] - 1e-2)
             new.split.points = append(temp.sp, new.splits, after = index.in - 1)
           }
         } else {
-          index.in = sample(c(0,1), 1)
+          index.in = sample(c(0, 1), 1)
           add.id = sample((N + 1):(N + M), 1)
-          new.algo.order = append(algo.order, add.id, after = index.in)
+          new.algo.order = algo.order[-add.id]
+          new.algo.order = append(new.algo.order, add.id, after = index.in)
           new.split.points = runif(1, 0, 1)
           
         }
@@ -217,8 +218,6 @@ singleDataSituationData = function(situation, N, M, split.points, algo.order, p,
       break
     }
     dists = c(res.list$split.points, 1) - c(0, res.list$split.points)
-    print(res.list$split.points)
-    print(dists)
     if (all(dists > 0.025)) {
       break
     }
@@ -227,7 +226,5 @@ singleDataSituationData = function(situation, N, M, split.points, algo.order, p,
     }
   }
   
-  
-  print(res.list$split.points)
   return(res.list)
 }

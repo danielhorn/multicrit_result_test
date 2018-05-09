@@ -39,10 +39,10 @@ renderFrontTestResult = function(x, colors = NULL) {
   best.algo.order = x$best.algo.order
   split.vals = x$split.vals
   
-  if (is.null(colors))
+#  if (is.null(colors))
     colors = rainbow(length(algos))
-  else
-    assertCharacter(colors, len = length(algos))
+ # else
+#    assertCharacter(colors, len = length(algos))
   
   plots = list()
   
@@ -50,7 +50,7 @@ renderFrontTestResult = function(x, colors = NULL) {
   plots[[1L]] = plotChaosPlot(data, var.cols, algo.col, repl.col, colors)
   
   # First Plot: EAF of everything
-  plots[[2L]] = plotEAF(data, var.cols, algo.col, repl.col, colors)
+  plots[[2L]] = plotEAF(data, var.cols, algo.col, repl.col, data.col, colors)
 
   # Second Plot: Remove dominated algorithms
   plots[[3L]] = plotDominationSelection(data = x$algos.domination.count, 
@@ -59,7 +59,7 @@ renderFrontTestResult = function(x, colors = NULL) {
   # Third Plot: EAF off all non-dominated algos
   colors.non.dom.algos = colors[algos %in% non.dom.algos]
   data = subset(data, data[, algo.col] %in% non.dom.algos)
-  plots[[4L]] = plotEAF(data, var.cols, algo.col, repl.col, colors.non.dom.algos)
+  plots[[4L]] = plotEAF(data, var.cols, algo.col, repl.col, data.col, colors.non.dom.algos)
 
   # 4th Plot: Multicrit Selection of relevant algos
   if (!is.null(x$algos.selection.vals))
@@ -71,16 +71,16 @@ renderFrontTestResult = function(x, colors = NULL) {
     relevant.algos = names(which(x$relevant.algos))
     colors.relevant.algos = colors[algos %in% relevant.algos]
     data = subset(data, data[, algo.col] %in% relevant.algos)
-    plots[[6L]] = plotEAF(data, var.cols, algo.col, repl.col, colors.relevant.algos)
+    plots[[6L]] = plotEAF(data, var.cols, algo.col, repl.col, data.col, colors.relevant.algos)
   }
 
   ## 6th Plot: Show permutation.
   colors.best.order = colors[algos %in% best.algo.order]
-  #plots[[7]] = plotAlgorithmOrder(data, best.algo.order, split.vals,
-  #  var.cols, algo.col, repl.col, colors.relevant.algos, colors.best.order)
+  plots[[7]] = plotAlgorithmOrder(data, best.algo.order, split.vals,
+    var.cols, algo.col, repl.col, data.col, colors.relevant.algos, colors.best.order)
 
   # 7th Plot: Final Plot with final reduced common Pareto front
-  plots[[7L]] = finalPlot(data, best.algo.order, split.vals, var.cols, algo.col, 
+  plots[[8L]] = finalPlot(data, best.algo.order, split.vals, var.cols, algo.col, 
     repl.col, colors.best.order)
   
   return(plots)

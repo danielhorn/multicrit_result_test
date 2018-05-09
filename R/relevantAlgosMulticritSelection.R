@@ -12,25 +12,38 @@
 relevantAlgosMulticritSelection = function(data, var.cols, algo.col, repl.col, contrFun, w) {
  
   algos = as.character(sort(unique(data[, algo.col])))
-  
-  # first, we need the reference front. this is the median eaf of all algos and repls
-  ref.front = eaf:::eafs(points = data[, var.cols],
-    sets = data[, repl.col], percentiles = 50)[, 1:2]
-  
-  # a getIndicatorValue Function - gets a vector of algos and returns the indicator
-  getIndicatorValue = function(algos) {
-    # first get the eaf - but only of algos
-    d = subset(data, data[, algo.col] %in% algos)
-    front = eaf:::eafs(points = d[, var.cols], sets = d[, repl.col], percentiles = 50)[, 1:2]
-    contrFun(front, ref.front)
-  }
-  
-  # get every combination of algos
+
+  # Precalculate every combination of algos
   combs = as.matrix(expand.grid(rep(list(c(TRUE, FALSE)), length(algos))))
   combs = combs[-nrow(combs), ]
   colnames(combs) = algos
-  # and compute its indicator value
-  contr.vals = t(apply(combs, 1, function(inds) c(sum(inds), getIndicatorValue(algos[inds]))))
+  
+  # Do for every data set
+  oneDataSet = function(dat) {
+    
+    # a getIndicatorValue Function - gets a vector of algos and returns the indicator
+    getIndicatorValue = function(algos) {
+      # first get the eaf - but only of algos
+      d = subset(dat, dat[, algo.col] %in% algos)
+      front = eaf:::eafs(points = d[, var.cols], sets = d[, repl.col], percentiles = 50)[, 1:2]
+      contrFun(front, ref.front)
+    }
+    
+    # first, we need the reference front. this is the median eaf of all algos and repls
+    ref.front = eaf:::eafs(points = dat[, var.cols],
+      sets = dat[, repl.col], percentiles = 50)[, 1:2]
+    
+    # and compute its indicator value
+    t(apply(combs, 1, function(inds) c(sum(inds), getIndicatorValue(algos[inds]))))
+  }
+  
+  data.splitted = split(data, data[, data.col])
+  
+  on.data.contr = lapply(data.splitted, oneDataSet)
+  
+  # "Loss" of a portfolio is the mean of the loss over all data sets
+  contr.vals = Reduce(`+`, on.data.contr) / max(data[, data.col])
+  
   
   # normalize and augmented chebycheff of the 2 objective number of algos and indicator value
   contr.vals.norm = normalize(contr.vals, method = "range", margin = 2L)

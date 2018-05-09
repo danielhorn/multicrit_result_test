@@ -11,7 +11,9 @@
 #' @param algo.col [\code{character(1)}] \cr
 #'   Name of column containing the particular algorithm.
 #' @param repl.col [\code{character(1)}] \cr
-#'   Name of column containing the particular algorithm.
+#'   Name of column containing the particular replication.
+#' @param repl.col [\code{character(1)}] \cr
+#'   Name of column containing the particular data set. Can be missing.
 #' @param indicator [\code{character(1)}] \cr
 #'   Which multi-objective indicator should be used? Possible values are: \cr
 #'    \dQuote{hv}: Dominated Hypervolume (S-Metric), the default \cr
@@ -85,14 +87,21 @@
 #' plot(res, colors = c("turquoise", "green", "violet", "red", "black", "blue"))}
 #' @export
 
-selectPortfolio = function(data, var.cols, algo.col, repl.col,
+selectPortfolio = function(data, var.cols, algo.col, repl.col, data.col,
   indicator = "hv", ref.point = c(1.1, 1.1), lambda = 100,
   eta = 0.5, w = c(0.05, 0.95), cp = 0.1, normalize = TRUE) {
   
   requirePackages(c("emoa"))  
   
+  # data.col can be missing, analysis will be done on single data set
+  if (missing(data.col)) {
+    data$dataset = "dataset"
+    data.col = "dataset"
+  }
+  
   assertDataFrame(data, any.missing = FALSE)
   assertSubset(var.cols, colnames(data))
+  assertCharacter(var.cols, len = 2)
   assertChoice(algo.col, colnames(data))
   assertChoice(repl.col, colnames(data))
   assertChoice(indicator, c("hv", "r2", "epsilon"))
@@ -104,8 +113,8 @@ selectPortfolio = function(data, var.cols, algo.col, repl.col,
   assertNumber(cp, lower = 0L)
   assertFlag(normalize)
   
-  if (algo.col == repl.col || algo.col %in% var.cols || repl.col %in% var.cols)
-    stop("algo.col, var.col and repl.col must be distinct.")
+  if (length(unique(c(algo.col, repl.col, var.cols, data.col))) > 5L)
+    stop("algo.col, var.col, data.col and repl.col must be distinct.")
   
   # Initialize a list with all input args for the result object
   args = list(
@@ -187,6 +196,7 @@ selectPortfolio = function(data, var.cols, algo.col, repl.col,
   # Build result object
   res = list(
     non.dominated.algos = non.dom.algos$relevant.algos,
+    acc = perms$acc,
     algos.domination.count = non.dom.algos$counts,
     relevant.algos = selected.algos$relevant.algos,
     algos.selection.vals = selected.algos$algo.contrs,

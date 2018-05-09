@@ -8,6 +8,8 @@
 #'  Number of data sets.
 #' @param k [\code{integer}] \cr
 #'  Number of points that is generated for every algorithm.
+#' @param replication [\code{integer}] \cr
+#'  Number of replications that is generated par data set.
 #' @param replications [\code{integer}] \cr
 #'  Number of replications of the discrete approximation.
 #' @param type [\code{integer}] \cr
@@ -34,7 +36,7 @@
 #'  of the algorithms.
 #'  
 #' @export
-generateValidationData = function(N, M, D, type, p = 0.5, sigma, ...) {
+generateValidationData = function(N, M, D, replication, type, p = 0.5, sigma, ...) {
   # Alter sigma-Standard: 0.1
   if(missing(sigma)){
     sigma = 1/(4*N)
@@ -81,7 +83,7 @@ generateValidationData = function(N, M, D, type, p = 0.5, sigma, ...) {
     dat = generateSingleValidationData(id.num = ds.id, N = N.i, M = M.i,
       split.points = ds$split.points, algo.order = ds$algo.order,
       discretize.type = "NSGA-II_g", replications.type = "parameter-noise",
-      k = 20L, replication = 10L)
+      k = 20L, replication = replication)
     
     # Add dataset column to validationData
     dat$validationData$dataset = ds.id

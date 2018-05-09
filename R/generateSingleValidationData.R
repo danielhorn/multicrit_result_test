@@ -46,7 +46,7 @@ generateSingleValidationData = function(N = 3, M = 1, split.points = c(1 / 3, 2 
     "NSGA-II", "NSGA-II_g"))
   assertChoice(replications.type, choices = c("parameter-noise", "point-noise"))
   k = asInt(k)
-  replications = asInt(k)
+  replications = asInt(replications)
   
   #TODO: Type 5 bug
   algo.order = asInteger(algo.order, unique = TRUE, len = (N + M))
@@ -62,11 +62,10 @@ generateSingleValidationData = function(N = 3, M = 1, split.points = c(1 / 3, 2 
   
   landscape = generateParetoLandscape(id = paste("dataset",id.num), N = N, M = M, split.points = split.points,
     algo.order = algo.order)
-
-
+  
+  
   if (replications.type == "parameter-noise") {
     landscape.list = lapply(1:replications, function(i) makeNoisy(landscape))
-    
     tmp = lapply(seq_along(landscape.list), function(i)
       cbind(generateDiscreteParetoLandscape(landscape.list[[i]], k), i))
     X = do.call(rbind, tmp)
@@ -89,6 +88,10 @@ generateSingleValidationData = function(N = 3, M = 1, split.points = c(1 / 3, 2 
   }
   
   colnames(X) = c("algorithm", "x", "y", "repl")
+  
+  # Hard coded: remove all outliers, i.e. observations outside [-0.05, 10.5]
+  outliers = X$x < 0 | X$x > 1 | X$y < 0 | X$y > 1
+  X = X[!outliers, ]
   
   #generate names for algorithms corresponding to given algorithm order
   algoNames = paste0("algo", algo.order)

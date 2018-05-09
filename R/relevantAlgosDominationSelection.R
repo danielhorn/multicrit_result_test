@@ -8,17 +8,32 @@
 #            points for each algorithm
 
 relevantAlgosDominationSelection = function(data, var.cols, algo.col, repl.col, eta) {
-
-  data.splitted = split(data, data[, repl.col])
   
-  data.splitted = lapply(data.splitted, function(d)
-    d[nds_rank(as.matrix(t(d[, var.cols]))) == 1L, ])
+  n.repl = max(data[, repl.col])
+  n.data = max(data[, data.col])
   
-  non.dom.algos = lapply(data.splitted, function(d) unique(d[, algo.col]))
+  #Calculate for one data set and each repl, if an algorithm had non-dominated points
+  oneDataSet = function(d) {
+    d.splitted = split(d, d[, c(repl.col)])
+    
+    d.splitted = lapply(d.splitted, function(tmp)
+      tmp[nds_rank(as.matrix(t(tmp[, var.cols]))) == 1L, ])
+    
+    non.dom.algos = lapply(d.splitted, function(tmp) unique(tmp[, algo.col]))
+    
+    # Make a Table of it
+    table(unlist(non.dom.algos))
+  }
   
-  counts = table(unlist(non.dom.algos))
+  # apply over all data sets
+  counts = sapply(split(data, data[, c(data.col)]), oneDataSet)
   
-  relevant.algos = counts >= length(data.splitted) * eta
+  # An algorithm is relevant on one data set, if it has non-dominated points
+  # in more than eta replications.
+  # A data set is over all relevant, if he is relevant on ny data sets
+  relevant = apply(counts, 2, function(x) x >= n.repl * eta)
+  
+  relevant.algos = rowSums(relevant) >= n.data * ny
   
   list(relevant.algos = relevant.algos, counts = counts)
 }

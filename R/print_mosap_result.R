@@ -45,5 +45,10 @@ with respect to your algorithm variable %s and your replication variable %s.\n",
     catf("Favored order of algorithms, printed with low values of %s first:",
       var.cols[1L])
     catf("[1] %s", collapse(as.character(x$best.algo.order), sep = " - "))
+    catf("\n")
+    
+    catf("Estimated accuracy over all data sets:",
+      var.cols[1L])
+    catf("[1] %.3f", x$acc)
   }
 }

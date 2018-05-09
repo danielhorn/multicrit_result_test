@@ -1,24 +1,31 @@
 # Plot function to visualise the decision tree.
 plotAlgorithmOrder = function(data, best.algo.order, split.vals,
-  var.cols, algo.col, repl.col, colors.relevant.algos, colors.best.algo.order) {  
-  # Split dataset into it replications
-  data.splitted = split(data, data[, repl.col])
+  var.cols, algo.col, repl.col, data.col, colors.relevant.algos, colors.best.algo.order) {
   
-  # Apply Pareto-Filt
-  data.splitted = lapply(data.splitted, function(d)
-    d[nds_rank(as.matrix(t(d[, var.cols]))) == 1, ])
-  
-  # normalize to [0, 1] and we only need var value, algo and repl
-  data.splitted = lapply(data.splitted, function(d)
-    data.frame(
-      value = normalize(d[, var.cols[1]], method = "range"),
-      algo = factor(d[, algo.col], levels = unique(data[, algo.col])),
-      repl = d[, repl.col]
+  # Do for every data set
+  oneDataSet = function(d) {
+    # Split dataset into it replications
+    data.splitted = split(d, d[, repl.col])
+    
+    # Apply Pareto-Filt
+    data.splitted = lapply(data.splitted, function(d)
+      d[nds_rank(as.matrix(t(d[, var.cols]))) == 1, ])
+    
+    # normalize to [0, 1] and we only need var value, algo and repl
+    data.splitted = lapply(data.splitted, function(d)
+      data.frame(
+        value = normalize(d[, var.cols[1]], method = "range"),
+        algo = factor(d[, algo.col], levels = unique(data[, algo.col])),
+        repl = d[, repl.col]
+      )
     )
-  )
-  
-  # now merge everything
-  data.long = Reduce(rbind, data.splitted)
+    
+    # now merge everything
+    d2 = Reduce(rbind, data.splitted)
+    d2[, data.col] = d[1, data.col]
+    d2
+  }
+  data.long = do.call(rbind, lapply(split(data, data[, data.col]), oneDataSet))
   
   data.geom.rect = data.frame(
     xmin = c(0, split.vals),
@@ -29,15 +36,16 @@ plotAlgorithmOrder = function(data, best.algo.order, split.vals,
   )
   
   # now the plotting
-  p = ggplot2::ggplot(data.long, ggplot2::aes_string(x = "value", y = "repl", col = "algo"))
-  p = p + ggplot2::geom_point(size = 4)
-  p = p + ggplot2::xlab(paste("Normalized", var.cols[1])) + ggplot2::ylab("Replication")
-  p = p + ggplot2::scale_y_continuous(breaks = 1:max(data[, repl.col]))
-  p = p + ggplot2::scale_color_manual(values = colors.relevant.algos, name = "observed")
-  p = p + geom_rect(data = data.geom.rect,
+  p = ggplot(data.long, ggplot2::aes_string(x = "value", y = "repl", col = "algo")) + 
+    geom_point(size = 4) + 
+    xlab(paste("Normalized", var.cols[1])) + ggplot2::ylab("Replication") + 
+    scale_y_continuous(breaks = 1:max(data[, repl.col])) + 
+    scale_color_manual(values = colors.relevant.algos, name = "observed") + 
+    facet_wrap("dataset") + 
+    geom_rect(data = data.geom.rect,
     aes_string(xmin = "xmin", ymin = "ymin", xmax = "xmax", ymax = "ymax", fill = "predicted"),
-    alpha = 0.1, inherit.aes = FALSE)
-  p = p + ggplot2::scale_fill_manual(values = colors.best.algo.order, name = "predicted")
+    alpha = 0.1, inherit.aes = FALSE) +
+    scale_fill_manual(values = colors.best.algo.order, name = "predicted")
   
   return(p)
 }

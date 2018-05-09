@@ -26,34 +26,32 @@
 sortedParetoFrontClassification = function(data, var.cols, algo.col, repl.col, contrFun, cp) {
   requirePackages("rpart")  
   
-  # Use the EAF points to learn the rpart
-  # So, first, calculate them, exclude percentile coloumn
+  # Use the EAF points to learn the rpart.
+  # So, first, calculate them, for each data set, exclude percentile coloumn
   # FIXME magic number
-  eaf.front = eaf:::eafs(points = data[, var.cols], sets = data[, repl.col],
-    groups = data[, algo.col], percentiles = 50)[, -(length(var.cols) + 1)]
+  eaf.front = do.call(rbind, lapply(split(data, data[, data.col]), function(d) {
+    # Calculate EAF for each data set
+    eaf = eaf:::eafs(points = d[, var.cols], sets = d[, repl.col],
+      groups = d[, algo.col], percentiles = 50)[, -(length(var.cols) + 1)]
+    # apply Pareto filter
+    eaf = eaf[nds_rank(as.matrix(t(eaf[, 1:2]))) == 1L, ]
+    # calculate weights for the points - each point has its own contribution
+    # as its weight
+    eaf$weights = sapply(seq_row(eaf), function(i) contrFun(eaf[-i, 1:2], eaf[, 1:2]))
+    eaf$dataset = d[1, data.col]
+    eaf
+  }))
   
-  # Apply Pareto-filter
-  var.ids = 1:(ncol(eaf.front) - 1L)
-  eaf.front = eaf.front[nds_rank(as.matrix(t(eaf.front[, var.ids]))) == 1L, ]
-  
-  # calculate weights for the points - each point has its own contribution
-  # as its weight
-  weights = sapply(seq_row(eaf.front),
-    function(i)
-      contrFun(eaf.front[-i, -ncol(eaf.front)], eaf.front[, -ncol(eaf.front)])
-    )
-  
-  # exclude one variable
-  # FIXME erlaube mehr abblidungen, nicht nur auf die eine var.id
-  eaf.front = eaf.front[, -max(var.ids)]
-  # now use rpart to get order of algorithms
-  mod = rpart::rpart(groups ~ ., data = eaf.front, weights = weights, minsplit = 1)
+  # now use rpart on one variable to get order of algorithms
+  mod = rpart::rpart(groups ~ X1, data = eaf.front, weights = eaf.front$weights, minsplit = 1)
   mod = rpart::prune(mod, cp = cp)
+  
+  # Also calculate the training-accuracy
+  acc = mean(predict(mod, eaf.front, type = "class") == eaf.front$groups)
   
   # i don't see a "good" way to get the perm vector from the mod
   # so, get the vector of split values from the model, sort them, add 2 new
   # max / min values, predict with 1 value in each interval and tada
-  # FIXME: This works only for 2 var.cols atm. 
   split.vals = sort(mod$splits[, "index"])
   pred.vals = data.frame(X1 = rowMeans(cbind(
     c(min(split.vals) - 1, split.vals),
@@ -68,5 +66,5 @@ sortedParetoFrontClassification = function(data, var.cols, algo.col, repl.col, c
   perm = perm[c(TRUE, unequal.inds)]
   split.vals = split.vals[unequal.inds]
   
-  return(list(perm = perm, split.vals = split.vals))
+  return(list(perm = perm, split.vals = split.vals, acc = acc))
 }

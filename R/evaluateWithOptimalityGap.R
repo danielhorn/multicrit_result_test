@@ -20,12 +20,12 @@ evaluateWithOptimalityGap = function(validation.obj, portfolio, data.set){
   split.vals = c(0, portfolio$split.vals, 1.1)
   
   raster.seq = seq(0, 1, length.out = 1e5)
-
+  
   i = 1
   y.sel = numeric(length = 1e5)
   for(alg in best.algo.order) {
     ind.area = which(raster.seq >= split.vals[i] 
-                    & raster.seq < split.vals[i + 1])
+      & raster.seq < split.vals[i + 1])
     
     names(f.list) = landscape$algo.order
     y.sel[ind.area] = f.list[[alg]](raster.seq[ind.area])
@@ -40,7 +40,7 @@ evaluateWithOptimalityGap = function(validation.obj, portfolio, data.set){
   y.glo = numeric(length = 1e5)
   for(alg in algo.order) {
     ind.area = which(raster.seq >= split.points[i] 
-                     & raster.seq < split.points[i + 1])
+      & raster.seq < split.points[i + 1])
     y.glo[ind.area] = f.list[[alg]](raster.seq[ind.area])
     j = j + 1
   }

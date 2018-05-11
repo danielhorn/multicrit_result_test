@@ -89,7 +89,7 @@
 
 selectPortfolio = function(data, var.cols, algo.col, repl.col, data.col,
   indicator = "hv", ref.point = c(1.1, 1.1), lambda = 100,
-  eta = 0.5, w = c(0.05, 0.95), cp = 0.1, normalize = TRUE) {
+  eta = 0.5, ny = 0.5, w = c(0.05, 0.95), cp = 0.1, normalize = TRUE) {
   
   requirePackages(c("emoa"))  
   
@@ -98,7 +98,7 @@ selectPortfolio = function(data, var.cols, algo.col, repl.col, data.col,
     data$dataset = "dataset"
     data.col = "dataset"
   }
-  
+
   assertDataFrame(data, any.missing = FALSE)
   assertSubset(var.cols, colnames(data))
   assertCharacter(var.cols, len = 2)
@@ -122,6 +122,7 @@ selectPortfolio = function(data, var.cols, algo.col, repl.col, data.col,
     var.cols = var.cols,
     algo.col = algo.col,
     repl.col = repl.col,
+    data.col = data.col,
     indicator = indicator,
     ref.point = ref.point,
     lambda = lambda,
@@ -149,8 +150,8 @@ selectPortfolio = function(data, var.cols, algo.col, repl.col, data.col,
   )
   
   # First selection: Remove all algorithms that are dominated in at least eta% repls
-  non.dom.algos = 
-    relevantAlgosDominationSelection(data, var.cols, algo.col, repl.col, eta)
+  non.dom.algos = relevantAlgosDominationSelection(data, var.cols, algo.col,
+    repl.col, data.col, eta, ny)
   
   # Now drop non-selected algos and set new factor levels
   # FIXME: dropAlgorithms schreiben
@@ -175,8 +176,8 @@ selectPortfolio = function(data, var.cols, algo.col, repl.col, data.col,
   }
   
   # Second Selection: Multicrit Selection
-  selected.algos = 
-    relevantAlgosMulticritSelection(data, var.cols, algo.col, repl.col, contrFun, w)
+  selected.algos = relevantAlgosMulticritSelection(data, var.cols, algo.col,
+    repl.col, data.col, contrFun, w)
   
   # Now drop non selected algos and set new factor levels
   # FIXME: funktion dropAlgorithms
@@ -189,8 +190,8 @@ selectPortfolio = function(data, var.cols, algo.col, repl.col, data.col,
     perms = list(perm = algos, split.vals = NULL)
   }
   if (length(algos) > 1L) {
-    perms =
-      sortedParetoFrontClassification(data, var.cols, algo.col, repl.col, contrFun, cp)
+    perms = sortedParetoFrontClassification(data, var.cols, algo.col, repl.col,
+      data.col, contrFun, cp)
   }
 
   # Build result object

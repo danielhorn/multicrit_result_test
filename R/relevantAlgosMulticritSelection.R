@@ -9,7 +9,8 @@
 #                 is active in this subset. Last 2 rows are numeric. First is
 #                 the number of algos in this subset, second one the optimality gap.
 
-relevantAlgosMulticritSelection = function(data, var.cols, algo.col, repl.col, contrFun, w) {
+relevantAlgosMulticritSelection = function(data, var.cols, algo.col, repl.col,
+  data.col, contrFun, w) {
  
   algos = as.character(sort(unique(data[, algo.col])))
 
@@ -42,7 +43,7 @@ relevantAlgosMulticritSelection = function(data, var.cols, algo.col, repl.col, c
   on.data.contr = lapply(data.splitted, oneDataSet)
   
   # "Loss" of a portfolio is the mean of the loss over all data sets
-  contr.vals = Reduce(`+`, on.data.contr) / max(data[, data.col])
+  contr.vals = Reduce(`+`, on.data.contr) / length(unique(data[, data.col]))
   
   
   # normalize and augmented chebycheff of the 2 objective number of algos and indicator value

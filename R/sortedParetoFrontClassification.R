@@ -23,7 +23,8 @@
 # @return [\code{character}]
 #   The preferred order of algorithms.
 
-sortedParetoFrontClassification = function(data, var.cols, algo.col, repl.col, contrFun, cp) {
+sortedParetoFrontClassification = function(data, var.cols, algo.col, repl.col,
+  data.col, contrFun, cp) {
   requirePackages("rpart")  
   
   # Use the EAF points to learn the rpart.

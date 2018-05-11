@@ -30,6 +30,7 @@ renderFrontTestResult = function(x, colors = NULL) {
   algo.col = x$args$algo.col
   var.cols = x$args$var.cols
   repl.col = x$args$repl.col
+  data.col = x$args$data.col
   
   repls = length(unique((data[, repl.col])))
   
@@ -39,15 +40,15 @@ renderFrontTestResult = function(x, colors = NULL) {
   best.algo.order = x$best.algo.order
   split.vals = x$split.vals
   
-#  if (is.null(colors))
+  if (is.null(colors))
     colors = rainbow(length(algos))
- # else
-#    assertCharacter(colors, len = length(algos))
+  else
+    assertCharacter(colors, len = length(algos))
   
   plots = list()
   
   # Ground Zero: Chaos Plot
-  plots[[1L]] = plotChaosPlot(data, var.cols, algo.col, repl.col, colors)
+  plots[[1L]] = plotChaosPlot(data, var.cols, algo.col, repl.col, data.col, colors)
   
   # First Plot: EAF of everything
   plots[[2L]] = plotEAF(data, var.cols, algo.col, repl.col, data.col, colors)

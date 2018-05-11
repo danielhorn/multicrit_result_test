@@ -7,10 +7,10 @@
 #    counts: Named numeric vector - number of replications with non-dominated
 #            points for each algorithm
 
-relevantAlgosDominationSelection = function(data, var.cols, algo.col, repl.col, eta) {
+relevantAlgosDominationSelection = function(data, var.cols, algo.col, repl.col, data.col, eta, ny) {
   
   n.repl = max(data[, repl.col])
-  n.data = max(data[, data.col])
+  n.data = length(unique(data[, data.col]))
   
   #Calculate for one data set and each repl, if an algorithm had non-dominated points
   oneDataSet = function(d) {

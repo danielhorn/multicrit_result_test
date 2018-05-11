@@ -1,6 +1,6 @@
 # Ground Zero Plot, Chaos Plot
 # Plot The Raw Data, Color for algo, x and y for the variables and facet wrap for repl
-plotChaosPlot = function(data, var.cols, algo.col, repl.col, colors) {
+plotChaosPlot = function(data, var.cols, algo.col, repl.col, data.col, colors) {
   # Split dataset into it replications
   data.splitted = split(data, data[, c(repl.col, algo.col, data.col)])
   

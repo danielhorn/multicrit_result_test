@@ -11,10 +11,11 @@
 #'  
 #' @export
 evaluateWithXIntegral = function(validation.obj, portfolio) {
-  N = length(validation.obj$split.points) - 1
+  N = length(validation.obj$split.points) + 1
   n = length(portfolio$best.algo.order)
   
-  true.split.points = validation.obj$split.points
+  # Add edge points
+  true.split.points = c(0, validation.obj$split.points, 1)
   estimated.split.points = c(0, portfolio$split.vals, 1)
   
   rel.algo.names = validation.obj$algos

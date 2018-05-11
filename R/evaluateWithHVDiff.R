@@ -4,37 +4,52 @@
 #' @param validation.obj
 #'   Result of \code{generateParetoLandscape}.
 #' @param portfolio  
-#'   Result of \code{MOSAP::selectPortfolio}. 
-#' @param data.set
-#'  Calculate measure for given data set
+#'   Result of \code{MOSAP::selectPortfolio}.
 #' 
 #' @return [\code{numeric}]
 #'  Value between 0 and 1: Total difference of dominated hypervolume for selected set of algorithms with
 #'  optimal set of algorithms for data set.
 #'  
 #' @export
-evaluateWithHVDiff = function(validation.obj, portfolio, data.set){
+evaluateWithHVDiff = function(validation.obj, portfolio){
+  
+  # First: extract a function from the estimated portfolio, that represents
+  # the common Pareto fron based on the optimal algorithms and split points from
+  # the portfolio
+  
+  # Extract the list of front function from the validation object
   landscape = validation.obj$landscape.list[[data.set]]
   f.list = landscape$f.list
   
+  # Get algos and splits from portfolio
   best.algo.order = portfolio$best.algo.order
   split.vals = portfolio$split.vals
   
-  ## frankensteins function of portfolio algorithms
+  # Reduce the list to only relevant function
+  f.sub = f.list[best.algo.order]
+  
+  ## define the function
   f.portfolio = function(x) {
-    f.sub = f.list[best.algo.order]
+    # Based on x, select the correct function
     selected.f = f.sub[[1 + sum(x > split.vals)]]
-    
+    # And evaluate
     return(selected.f(x))
   }
   f.portfolio = Vectorize(f.portfolio)
   
-  ## frankensteins function of optimal set of algorithms (on given data.set)
+  # Second: True common front function from the validation object
+  
+  # As in the portfolio, reduce the list of function to only the optimal ones
+  f.paretoOpt = f.list[sapply(f.list, isAlgoParetoOpt)]
+  # Sortieren, so dass aufsteigend in der x-Achse
+  f.paretoOpt = f.paretoOpt[order(sapply(f.paretoOpt, getAlgoRangeX)[1, ])]
+  # Wahre Split extrahieren
+  true.splits = landscape$split.points
+  
   f.optimal = function(x) {
-    f.paretoOpt = f.list[sapply(f.list, isAlgoParetoOpt)]
-    true.splits = landscape$split.points
+    # Based on x, select the correct function
     selected.f = f.paretoOpt[[1 + sum(x > true.splits)]]
-    
+    # And evaluate
     return(selected.f(x))
   }
   f.optimal = Vectorize(f.optimal)

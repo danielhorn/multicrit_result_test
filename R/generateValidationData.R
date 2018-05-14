@@ -39,11 +39,6 @@
 generateValidationData = function(N, M, D.train, D.test,
   replications, type, p = 0.5, sigma = 1 / (4 * N), ...) {
   
-  # Alter sigma-Standard: 0.1
-  if(missing(sigma)){
-    sigma
-  }
-  
   # Default Orders und Splits
   if (N == 1L) {
     split.points = numeric(0)
@@ -56,6 +51,7 @@ generateValidationData = function(N, M, D.train, D.test,
   valid.data = BBmisc::makeDataFrame(nrow = 0, ncol = 5, col.types = "numeric",
     col.names = c("algorithm", "x", "y", "repl", "dataset"))
   landscapes = list()
+  general.changes = logical()
   
   ## Ueberpruefen, ob N oder M zu klein fuer die jeweilige Situation ist
   
@@ -93,17 +89,22 @@ generateValidationData = function(N, M, D.train, D.test,
     # Store validation data and landscape in result objects
     valid.data = rbind(valid.data, dat$validationData)
     landscapes[[ds.id]] = dat$landscape
+    general.changes[ds.id] = ds$general.changes
   }
+  
+  names(general.changes) = 1:D.train + D.test
   
   result = makeS3Obj(
     train.data = subset(valid.data, dataset %in% 1:D.train),
     train.landscapes = landscapes[1:D.train],
+    train.general.changes = general.changes[1:D.train],
     
     split.points = split.points,
     algos = paste0("algo", algo.order),
     
     test.data = subset(valid.data, dataset %in% (D.train + 1):(D.train + D.test)),
     test.landscapes = landscapes[(D.train + 1):(D.train + D.test)],
+    test.general.changes = general.changes[(D.train + 1):(D.train + D.test)],
     
     type = type,
     sigma = sigma,

@@ -33,6 +33,9 @@
 
 singleDataSituationData = function(situation, N, M, split.points, algo.order, p, sigma) {
   
+  # Marker: Did some general change appeared for this data.set?
+  general.change = FALSE
+  
   counter = 0
   repeat {
     counter = counter + 1
@@ -64,6 +67,7 @@ singleDataSituationData = function(situation, N, M, split.points, algo.order, p,
     if (situation == 4L) {
       # Only with prob p switch
       if (rbinom(1, 1, p)) {
+        general.chance = TRUE
         # Which algorithm to remove?
         remove.id = sample(N, 1)
         # Border cases 1 and N:
@@ -96,6 +100,7 @@ singleDataSituationData = function(situation, N, M, split.points, algo.order, p,
     if (situation == 5L) {
       # Only with prob p switch
       if (rbinom(1, 1, p)) {
+        general.change = TRUE
         # Case N=1 is different
         if (N > 1) {
           index.in = sample((N + 1), 1) - 1
@@ -143,7 +148,7 @@ singleDataSituationData = function(situation, N, M, split.points, algo.order, p,
     if (situation == 6L) {
       # Only with prob p switch
       if (rbinom(1, 1, p)) {
-        
+        general.change = TRUE
         id.out = sample(N, 1)
         id.in = sample((N + 1):(N + M), 1)
         
@@ -166,7 +171,7 @@ singleDataSituationData = function(situation, N, M, split.points, algo.order, p,
     if (situation == 7L) {
       # Only with prob p switch
       if (rbinom(1, 1, p)) {
-        
+        general.change = TRUE
         switch.ids = sample(N, 2)
         
         algo.order[switch.ids[1]] = switch.ids[2]
@@ -186,6 +191,7 @@ singleDataSituationData = function(situation, N, M, split.points, algo.order, p,
     }
     
     if (situation == 8L) {
+      general.change = TRUE
       if(N > 1){
         res.list = list(
           split.points = split.points,
@@ -200,6 +206,7 @@ singleDataSituationData = function(situation, N, M, split.points, algo.order, p,
     }
     
     if (situation == 9L) {
+      general.change = TRUE
       if(N > 1){
         res.list = list(
           split.points = sort(runif(N - 1)),
@@ -225,6 +232,8 @@ singleDataSituationData = function(situation, N, M, split.points, algo.order, p,
       stop("Not able to find proper split.points. Please adjust sigma.")
     }
   }
+  
+  res.list$general.change = general.change
   
   return(res.list)
 }

@@ -17,9 +17,9 @@
 #' @export
 plotValidationData = function(val.data, repls = 1L, grey = FALSE, return.plot = FALSE, 
   title = "", legend = TRUE) {
-  n = length(val.data$landscape.list[[1]]$f.list)
+  n = length(val.data$train.landscapes[[1]]$f.list)
   
-  dat = val.data$valid.data[val.data$valid.data$repl %in% repls, ]
+  dat = val.data$train.data[val.data$train.data$repl %in% repls, ]
   algo.names = val.data$algos
   n.data.sets = length(unique(dat$dataset))
   pl = ggplot(data = dat)
@@ -45,8 +45,8 @@ plotValidationData = function(val.data, repls = 1L, grey = FALSE, return.plot = 
         
       } else {
         pl = pl + stat_function(aes_string("x", colour = "algorithm"), 
-          data = data.frame(x = c(0, 1), algorithm = val.data$landscape.list[[j]]$algo.order[i], dataset = j), 
-          fun = val.data$landscape.list[[j]]$f.list[[i]], size = 1)
+          data = data.frame(x = c(0, 1), algorithm = val.data$train.landscapes[[j]]$algo.order[i], dataset = j), 
+          fun = val.data$train.landscapes[[j]]$f.list[[i]], size = 1)
       }
     }
   }

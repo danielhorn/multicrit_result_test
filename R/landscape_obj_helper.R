@@ -5,7 +5,7 @@
   
   if (element == "split.points") {
     all.splits = lapply(landscape$f.list, getAlgoRangeX)
-    all.splits = sort(unique(unlist(all.splits)))[2:(getAlgoCount(landscape) - 1)]
+    all.splits = sort(unique(unlist(all.splits)))[-c(1, getAlgoCount(landscape))]
     return(all.splits)
   }
   
@@ -13,7 +13,7 @@
     #left.border = unlist(lapply(landscape$f.list, function(x) 
     #  c(na.omit(getAlgoRangeX(x)[1]))))
     #order = order(left.border)
-    return(sapply(landscape$f.list, getAlgoID))#[order])
+    return(sapply(landscape$f.list, getAlgoID))#[1:getFrontAlgoCount(landscape)])#[order])
   }
   
   stopf("Landscape does not include the requested element %s.", element)

@@ -4,12 +4,12 @@
 #'   Number of algorithms on the common pareto front.
 #' @param M [\code{integer}] \cr
 #'  Number of additional algorithms that are not on the common pareto front.
-#'  @param D [\code{integer}] \cr
-#'  Number of data sets.
+#'  @param D.train [\code{integer}] \cr
+#'  Number of data sets for training.
+#'  @param D.test [\code{integer}] \cr
+#'  Number of data sets for test.
 #' @param k [\code{integer}] \cr
 #'  Number of points that is generated for every algorithm.
-#' @param replication [\code{integer}] \cr
-#'  Number of replications that is generated par data set.
 #' @param replications [\code{integer}] \cr
 #'  Number of replications of the discrete approximation.
 #' @param type [\code{integer}] \cr
@@ -25,9 +25,9 @@
 #'  8: random order, split points identical
 #'  9: random order and split points random
 #'  @param p [\code{numeric}] \cr
-#'  Parameter for type 4-7: probability for a missing/ inserted/ swapped algorithm on each data set. Between 0 and 1.
+#'  Parameter for type 4-7: probability for a missing/ inserted/ swapped algorithm on each data set. Between 0 and 1, defaults to 0.05
 #'  @param sigma [\code{numeric}] \cr
-#'  Parameter for type 2 - noise strength
+#'  Parameter for type 2 - noise strength, defaults to 1 / (4 * N)
 #'  
 #' 
 #' @return [\code{list}]
@@ -36,10 +36,12 @@
 #'  of the algorithms.
 #'  
 #' @export
-generateValidationData = function(N, M, D, replication, type, p = 0.5, sigma, ...) {
+generateValidationData = function(N, M, D.train, D.test,
+  replications, type, p = 0.5, sigma = 1 / (4 * N), ...) {
+  
   # Alter sigma-Standard: 0.1
   if(missing(sigma)){
-    sigma = 1/(4*N)
+    sigma
   }
   
   # Default Orders und Splits
@@ -71,7 +73,7 @@ generateValidationData = function(N, M, D, replication, type, p = 0.5, sigma, ..
     }
   }
   
-  for (ds.id in seq_len(D)) {
+  for (ds.id in seq_len(D.train + D.test)) {
     
     # Generate split points and algorithm order for certain single data situation
     ds = singleDataSituationData(type, N, M, split.points, algo.order, p, sigma)
@@ -83,7 +85,7 @@ generateValidationData = function(N, M, D, replication, type, p = 0.5, sigma, ..
     dat = generateSingleValidationData(id.num = ds.id, N = N.i, M = M.i,
       split.points = ds$split.points, algo.order = ds$algo.order,
       discretize.type = "NSGA-II_g", replications.type = "parameter-noise",
-      k = 20L, replication = replication)
+      k = 20L, replications = replications)
     
     # Add dataset column to validationData
     dat$validationData$dataset = ds.id
@@ -94,16 +96,24 @@ generateValidationData = function(N, M, D, replication, type, p = 0.5, sigma, ..
   }
   
   result = makeS3Obj(
-    valid.data = valid.data,
+    train.data = subset(valid.data, dataset %in% 1:D.train),
+    train.landscapes = landscapes[1:D.train],
+    
+    split.points = split.points,
+    algos = paste0("algo", algo.order),
+    
+    test.data = subset(valid.data, dataset %in% (D.train + 1):(D.train + D.test)),
+    test.landscapes = landscapes[(D.train + 1):(D.train + D.test)],
+    
     type = type,
     sigma = sigma,
     p = p,
-    split.points = split.points,
-    algos = paste0("algo", algo.order),
-    landscape.list = landscapes,
     
     classes = "validation.obj"
   )
+  
+  result$train.data$dataset = as.factor(result$train.data$dataset)
+  result$test.data$dataset = as.factor(result$test.data$dataset)
   
   return(result)
 }

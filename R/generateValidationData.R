@@ -89,7 +89,7 @@ generateValidationData = function(N, M, D.train, D.test,
     # Store validation data and landscape in result objects
     valid.data = rbind(valid.data, dat$validationData)
     landscapes[[ds.id]] = dat$landscape
-    general.changes[ds.id] = ds$general.changes
+    general.changes[ds.id] = ds$general.change
   }
   
   names(general.changes) = 1:(D.train + D.test)

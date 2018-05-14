@@ -92,7 +92,7 @@ generateValidationData = function(N, M, D.train, D.test,
     general.changes[ds.id] = ds$general.changes
   }
   
-  names(general.changes) = 1:D.train + D.test
+  names(general.changes) = 1:(D.train + D.test)
   
   result = makeS3Obj(
     train.data = subset(valid.data, dataset %in% 1:D.train),

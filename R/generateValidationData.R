@@ -25,7 +25,7 @@
 #'  8: random order, split points identical
 #'  9: random order and split points random
 #'  @param p [\code{numeric}] \cr
-#'  Parameter for type 4-7: probability for a missing/ inserted/ swapped algorithm on each data set. Between 0 and 1, defaults to 0.05
+#'  Parameter for type 4-7: probability for a missing/ inserted/ swapped algorithm on each data set. Between 0 and 1, defaults to 0.5
 #'  @param sigma [\code{numeric}] \cr
 #'  Parameter for type 2 - noise strength, defaults to 1 / (4 * N)
 #'  

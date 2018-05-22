@@ -240,7 +240,8 @@ generateParetoLandscape = function(id = "My Landscape", N = 3L, M = 1L,
   for (i in 1 + seq_len(N + M - 1)) {
     dif.mat = abs(Z.Y[, 1:(i - 1), drop = FALSE] - Z.Y[, i])
     diffs = apply(dif.mat, 2, quantile, probs = 0.33, na.rm = TRUE)
-    if (any(diffs < 0.025)) {
+    # FIXME: Ist das is.na hier okay?
+    if (any(diffs < 0.025) | all(is.na(diffs))) {
       print("Recalled - zu aehnlich in Y")
       # Falls es zu aehnlich ist, Recallen wir
       return(Recall(id, N, M, split.points[-c(1, N + 1)], algo.order, max.iter, max.iter.k_c))

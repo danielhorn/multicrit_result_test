@@ -49,8 +49,13 @@ singleDataSituationData = function(situation, N, M, split.points, algo.order, p,
     
     if (situation == 2L) {
       # Return noisy split points and standard algorithm order
+      repeat {
+        new.splits =  rnorm((N - 1), split.points, sigma)
+        if (!is.unsorted(new.splits))
+          break
+      }
       res.list = list(
-        split.points = rnorm((N - 1), split.points, sigma),
+        split.points = new.splits,
         algo.order = algo.order
       )
     }

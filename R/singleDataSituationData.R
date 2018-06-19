@@ -155,7 +155,11 @@ singleDataSituationData = function(situation, N, M, split.points, algo.order, p,
       if (rbinom(1, 1, p)) {
         general.change = TRUE
         id.out = sample(N, 1)
-        id.in = sample((N + 1):(N + M), 1)
+        if (M == 1) {
+          id.in = N + M
+        } else {
+          id.in = sample((N + 1):(N + M), 1)
+        }
         
         algo.order[id.out] = id.in
         algo.order[id.in] = id.out

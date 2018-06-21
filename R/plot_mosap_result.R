@@ -34,6 +34,15 @@ renderFrontTestResult = function(x, colors = NULL) {
   
   repls = length(unique((data[, repl.col])))
   
+  # Normalize Data par data set
+  if (x$args$normalize) {
+    splitted = split(data[, var.cols], data[, data.col])
+    normalized = lapply(splitted, function(d) 
+      normalize(d[, var.cols], method = "range", range = c(0, 1))
+    )
+    data[, var.cols] = do.call(rbind, normalized)
+  }
+  
   algos = unique(sort(data[, algo.col]))
   non.dom.algos = names(which(x$non.dominated.algos))
   
@@ -82,7 +91,7 @@ renderFrontTestResult = function(x, colors = NULL) {
 
   # 7th Plot: Final Plot with final reduced common Pareto front
   plots[[8L]] = finalPlot(data, best.algo.order, split.vals, var.cols, algo.col, 
-    repl.col, colors.best.order)
+    repl.col, data.col, colors.best.order)
   
   return(plots)
 }

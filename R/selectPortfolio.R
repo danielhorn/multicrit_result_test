@@ -98,7 +98,7 @@ selectPortfolio = function(data, var.cols, algo.col, repl.col, data.col,
     data$dataset = "dataset"
     data.col = "dataset"
   }
-
+  
   assertDataFrame(data, any.missing = FALSE)
   assertSubset(var.cols, colnames(data))
   assertCharacter(var.cols, len = 2)
@@ -135,9 +135,14 @@ selectPortfolio = function(data, var.cols, algo.col, repl.col, data.col,
   
   algos = factor(sort(unique(data[, algo.col])))
   
-  # Normalize Data
-  if (normalize)
-    data[, var.cols] = normalize(data[, var.cols], method = "range", range = c(0, 1))
+  # Normalize Data par data set
+  if (normalize) {
+    splitted = split(data[, var.cols], data[, data.col])
+    normalized = lapply(splitted, function(d) 
+      normalize(d[, var.cols], method = "range", range = c(0, 1))
+    )
+    data[, var.cols] = do.call(rbind, normalized)
+  }
   
   # Select contribution function with respect to indicator character
   contrFun = switch(indicator,
@@ -193,7 +198,7 @@ selectPortfolio = function(data, var.cols, algo.col, repl.col, data.col,
     perms = sortedParetoFrontClassification(data, var.cols, algo.col, repl.col,
       data.col, contrFun, cp)
   }
-
+  
   # Build result object
   res = list(
     non.dominated.algos = non.dom.algos$relevant.algos,

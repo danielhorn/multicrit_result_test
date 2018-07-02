@@ -40,7 +40,7 @@ portfolioToParetoFront = function(data, best.algo.order, split.vals, var.cols,
   # Now, reduce over data sets, again, median
   d = eaf:::eafs(points = d[, c("X1", "X2")], sets = d[, data.col], percentiles = 50)
   d = as.data.frame(d)
-  d$algo = sapply(d$V1, function(x) best.algo.order[sum(x > split.vals)])
+  d$algo = sapply(d$V1, function(x) best.algo.order[sum(x >= split.vals)])
   
   # now it gets a little bit crazy ... add "middlepoints" between groups
   # so a nice colored line can be plotted

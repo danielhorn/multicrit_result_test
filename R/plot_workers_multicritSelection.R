@@ -34,7 +34,7 @@ plotMulticritSelection = function(data, colors, w) {
   # log scale
   cont.data = expand.grid(
     x = seq(min(data$algo.count) - 0.5, max(data$algo.count) + 0.5, length.out = 64),
-    y = 10^seq(log10(sort(data$contribution)[2]) - 0.5, log10(max(data$contribution)) + 0.5, length.out = 64)
+    y = 10^seq(log10(sort(data$contribution)[2] + 1e-16) - 0.5, log10(max(data$contribution)) + 0.5, length.out = 64)
     #y = seq(min(data$contribution), max(data$contribution), length.out = 64)
   )
   # scale with respect to data, not to cont.data
